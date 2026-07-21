@@ -1,0 +1,42 @@
+export const projects = [
+  {
+    id: 1,
+    name: "Piano Tiles",
+    slug: "piano-tiles",
+    icon: "🎹",
+    platforms: ["iOS", "Android", "Amazon"],
+    lastUpdated: "Today",
+  },
+  {
+    id: 2,
+    name: "Snake.io",
+    slug: "snake-io",
+    icon: "🐍",
+    platforms: ["iOS", "Android", "Amazon"],
+    lastUpdated: "Today",
+  },
+  {
+    id: 3,
+    name: "Zendoku",
+    slug: "zendoku",
+    icon: "🧩",
+    platforms: ["iOS", "Android", "Amazon"],
+    lastUpdated: "Yesterday",
+  },
+  {
+    id: 4,
+    name: "Watch Pet",
+    slug: "watch-pet",
+    icon: "🐶",
+    platforms: ["iOS", "Android", "Amazon"],
+    lastUpdated: "2 days ago",
+  },
+  {
+    id: 5,
+    name: "MicroTown",
+    slug: "microtown",
+    icon: "🏙️",
+    platforms: ["iOS", "Android", "Amazon"],
+    lastUpdated: "Today",
+  },
+];
