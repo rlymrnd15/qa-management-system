@@ -1,6 +1,48 @@
 import { X } from "lucide-react";
+import { useState } from "react";
 
-function ReportBugModal({ isOpen, onClose }) {
+function ReportBugModal({ isOpen, onClose, onSubmit }) {
+  
+  const [formData, setFormData] = useState({
+    title: "",
+    version: "",
+    device: "",
+    osVersion: "",
+    priority: "P2",
+    impact: "User Issue",
+    stepsToReproduce: "",
+    developerComments: ""
+  });
+  const handleSubmit = () => {
+
+  const newBug = {
+      id: Date.now(),
+      title: formData.title,
+      priority: formData.priority,
+      impact: formData.impact,
+      device: formData.device,
+      version: formData.version,
+      status: "Open",
+      reporter: "Raily",
+      date: new Date().toLocaleDateString(),
+      osVersion: formData.osVersion,
+      steps: formData.steps,
+      developerComments: formData.developerComments,
+    };
+
+    onSubmit(newBug);
+
+    setFormData({
+      title: "",
+      version: "",
+      device: "",
+      osVersion: "",
+      priority: "P2",
+      impact: "User Issue",
+      steps: "",
+      developerComments: "",
+    });
+  };
 
   if (!isOpen) return null;
 
@@ -38,9 +80,16 @@ function ReportBugModal({ isOpen, onClose }) {
             </label>
 
             <input
-              className="mt-2 w-full rounded-xl border p-3"
-              placeholder="Enter bug title"
-            />
+            value={formData.title}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                title: e.target.value,
+              })
+            }
+            className="mt-2 w-full rounded-xl border p-3"
+            placeholder="Enter bug title"
+          />
           </div>
 
 
@@ -51,6 +100,13 @@ function ReportBugModal({ isOpen, onClose }) {
             </label>
 
             <input
+              value={formData.version}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  version: e.target.value,
+                })
+              }
               className="mt-2 w-full rounded-xl border p-3"
               placeholder="Example: 2.5.1"
             />
@@ -64,6 +120,13 @@ function ReportBugModal({ isOpen, onClose }) {
             </label>
 
             <input
+              value={formData.device}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  device: e.target.value,
+                })
+              }
               className="mt-2 w-full rounded-xl border p-3"
               placeholder="Example: iPhone 15"
             />
@@ -77,6 +140,13 @@ function ReportBugModal({ isOpen, onClose }) {
             </label>
 
             <input
+              value={formData.osVersion}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  osVersion: e.target.value,
+                })
+              }
               className="mt-2 w-full rounded-xl border p-3"
               placeholder="Example: iOS 18"
             />
@@ -89,7 +159,16 @@ function ReportBugModal({ isOpen, onClose }) {
               QA Bug Priority
             </label>
 
-            <select className="mt-2 w-full rounded-xl border p-3">
+            <select
+              value={formData.priority}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  priority: e.target.value,
+                })
+              }
+              className="mt-2 w-full rounded-xl border p-3"
+            >
 
               <option>P0</option>
               <option>P1</option>
@@ -105,7 +184,16 @@ function ReportBugModal({ isOpen, onClose }) {
               Issue Impact
             </label>
 
-            <select className="mt-2 w-full rounded-xl border p-3">
+            <select
+              value={formData.impact}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  impact: e.target.value,
+                })
+              }
+              className="mt-2 w-full rounded-xl border p-3"
+            >
 
               <option>
                 Revenue Issue
@@ -156,8 +244,15 @@ function ReportBugModal({ isOpen, onClose }) {
           </label>
 
           <textarea
-            className="mt-2 h-24 w-full rounded-xl border p-3"
-          />
+          value={formData.steps}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              steps: e.target.value,
+            })
+          }
+          className="mt-2 h-32 w-full rounded-xl border p-3"
+        />
 
         </div>
 
@@ -176,6 +271,7 @@ function ReportBugModal({ isOpen, onClose }) {
 
 
           <button
+            onClick={handleSubmit}
             className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
           >
             Submit Bug
