@@ -54,6 +54,7 @@ function BugReports() {
     });
     
     const [selectedBug, setSelectedBug] = useState(null);
+    const [editingBug, setEditingBug] = useState(null);
     const [search, setSearch] = useState("");
     const [priority, setPriority] = useState("All");
     const [status, setStatus] = useState("All");
@@ -150,21 +151,49 @@ function BugReports() {
 
         <ReportBugModal
           isOpen={openModal}
-          onClose={() => setOpenModal(false)}
-          onSubmit={(newBug) => {
-
-              setBugs([
-                  ...bugs,
-                  newBug
-              ]);
-              setOpenModal(false);
+          bug={editingBug}
+          onClose={() => {
+            setOpenModal(false);
+            setEditingBug(null);
           }}
-      />
+          onSubmit={(newBug) => {
+            if (editingBug) {
+              setBugs(
+                bugs.map((bug) =>
+                  bug.id === newBug.id ? newBug : bug
+                )
+              );
+            } else {
+              setBugs([...bugs, newBug]);
+            }
+
+            setOpenModal(false);
+            setEditingBug(null);
+          }}
+        />
+
       <BugDetailsModal
         bug={selectedBug}
         onClose={() => setSelectedBug(null)}
-    />
+        onEdit={(bug) => {
+          setSelectedBug(null);
+          setEditingBug(bug);
+          setOpenModal(true);
+        }}
+        onDelete={(bug) => {
+          const confirmed = window.confirm(
+            `Are you sure you want to delete "${bug.title}"?`
+          );
 
+          if (!confirmed) return;
+
+          setBugs((prevBugs) =>
+            prevBugs.filter((item) => item.id !== bug.id)
+          );
+
+          setSelectedBug(null);
+        }}
+      />
     </div>
   );
 }

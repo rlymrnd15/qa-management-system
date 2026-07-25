@@ -1,6 +1,12 @@
 import { X } from "lucide-react";
 
-function BugDetailsModal({ bug, onClose }) {
+function BugDetailsModal({
+  bug,
+  onClose,
+  onEdit,
+  onDelete,
+}) {
+
   if (!bug) return null;
 
   return (
@@ -67,16 +73,30 @@ function BugDetailsModal({ bug, onClose }) {
 
         </div>
 
-        <div className="mt-8 flex justify-end">
+        <div className="mt-8 flex justify-end gap-3">
 
-          <button
-            onClick={onClose}
-            className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
-          >
-            Close
-          </button>
+        <button
+          onClick={() => onDelete(bug)}
+          className="rounded-xl bg-red-600 px-6 py-3 font-semibold text-white hover:bg-red-700"
+        >
+          Delete
+        </button>
 
-        </div>
+        <button
+          onClick={() => onEdit(bug)}
+          className="rounded-xl border px-6 py-3 font-semibold hover:bg-slate-100"
+        >
+          Edit
+        </button>
+
+        <button
+          onClick={onClose}
+          className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+        >
+          Close
+        </button>
+
+      </div>
 
       </div>
 

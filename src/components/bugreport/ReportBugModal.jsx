@@ -1,8 +1,12 @@
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import { useState } from "react";
 
-function ReportBugModal({ isOpen, onClose, onSubmit }) {
-  
+function ReportBugModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  bug = null,
+}) {
   const [formData, setFormData] = useState({
     title: "",
     version: "",
@@ -10,69 +14,75 @@ function ReportBugModal({ isOpen, onClose, onSubmit }) {
     osVersion: "",
     priority: "P2",
     impact: "User Issue",
-    stepsToReproduce: "",
-    developerComments: ""
+    steps: "",
+    developerComments: "",
   });
-  const handleSubmit = () => {
 
-  const newBug = {
-      id: Date.now(),
+  useEffect(() => {
+    if (bug) {
+      setFormData({
+        title: bug.title || "",
+        version: bug.version || "",
+        device: bug.device || "",
+        osVersion: bug.osVersion || "",
+        priority: bug.priority || "P2",
+        impact: bug.impact || "User Issue",
+        steps: bug.steps || "",
+        developerComments: bug.developerComments || "",
+      });
+    } else {
+      setFormData({
+        title: "",
+        version: "",
+        device: "",
+        osVersion: "",
+        priority: "P2",
+        impact: "User Issue",
+        steps: "",
+        developerComments: "",
+      });
+    }
+  }, [bug, isOpen]);
+
+  const handleSubmit = () => {
+    const newBug = {
+      id: bug ? bug.id : Date.now(),
       title: formData.title,
       priority: formData.priority,
       impact: formData.impact,
       device: formData.device,
       version: formData.version,
-      status: "Open",
-      reporter: "Raily",
-      date: new Date().toLocaleDateString(),
       osVersion: formData.osVersion,
       steps: formData.steps,
       developerComments: formData.developerComments,
+      status: bug ? bug.status : "Open",
+      reporter: bug ? bug.reporter : "Raily",
+      date: bug ? bug.date : new Date().toLocaleDateString(),
     };
 
     onSubmit(newBug);
-
-    setFormData({
-      title: "",
-      version: "",
-      device: "",
-      osVersion: "",
-      priority: "P2",
-      impact: "User Issue",
-      steps: "",
-      developerComments: "",
-    });
+    onClose();
   };
 
   if (!isOpen) return null;
 
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-
       <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-8">
-
 
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-
           <h2 className="text-2xl font-bold">
-            Report New Bug
+            {bug ? "Edit Bug" : "Report New Bug"}
           </h2>
-
 
           <button onClick={onClose}>
             <X />
           </button>
-
         </div>
 
-
-
         {/* Form */}
-
         <div className="grid gap-5 md:grid-cols-2">
-
 
           <div>
             <label className="text-sm font-semibold">
@@ -80,19 +90,17 @@ function ReportBugModal({ isOpen, onClose, onSubmit }) {
             </label>
 
             <input
-            value={formData.title}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                title: e.target.value,
-              })
-            }
-            className="mt-2 w-full rounded-xl border p-3"
-            placeholder="Enter bug title"
-          />
+              value={formData.title}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  title: e.target.value,
+                })
+              }
+              className="mt-2 w-full rounded-xl border p-3"
+              placeholder="Enter bug title"
+            />
           </div>
-
-
 
           <div>
             <label className="text-sm font-semibold">
@@ -112,8 +120,6 @@ function ReportBugModal({ isOpen, onClose, onSubmit }) {
             />
           </div>
 
-
-
           <div>
             <label className="text-sm font-semibold">
               Device
@@ -131,8 +137,6 @@ function ReportBugModal({ isOpen, onClose, onSubmit }) {
               placeholder="Example: iPhone 15"
             />
           </div>
-
-
 
           <div>
             <label className="text-sm font-semibold">
@@ -152,8 +156,6 @@ function ReportBugModal({ isOpen, onClose, onSubmit }) {
             />
           </div>
 
-
-
           <div>
             <label className="text-sm font-semibold">
               QA Bug Priority
@@ -169,15 +171,11 @@ function ReportBugModal({ isOpen, onClose, onSubmit }) {
               }
               className="mt-2 w-full rounded-xl border p-3"
             >
-
               <option>P0</option>
               <option>P1</option>
               <option>P2</option>
-
             </select>
           </div>
-
-
 
           <div>
             <label className="text-sm font-semibold">
@@ -194,72 +192,51 @@ function ReportBugModal({ isOpen, onClose, onSubmit }) {
               }
               className="mt-2 w-full rounded-xl border p-3"
             >
-
-              <option>
-                Revenue Issue
-              </option>
-
-              <option>
-                User Issue
-              </option>
-
-              <option>
-                Logging Issue
-              </option>
-
-              <option>
-                Other Issue
-              </option>
-
+              <option>Revenue Issue</option>
+              <option>User Issue</option>
+              <option>Logging Issue</option>
+              <option>Other Issue</option>
             </select>
           </div>
 
-
-
         </div>
 
-
-
-        {/* Full width fields */}
-
         <div className="mt-5">
-
           <label className="text-sm font-semibold">
             Steps to Reproduce
           </label>
 
           <textarea
+            value={formData.steps}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                steps: e.target.value,
+              })
+            }
             className="mt-2 h-32 w-full rounded-xl border p-3"
             placeholder="1. Open game..."
           />
-
         </div>
 
-
-
         <div className="mt-5">
-
           <label className="text-sm font-semibold">
             Developer Comments
           </label>
 
           <textarea
-          value={formData.steps}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              steps: e.target.value,
-            })
-          }
-          className="mt-2 h-32 w-full rounded-xl border p-3"
-        />
-
+            value={formData.developerComments}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                developerComments: e.target.value,
+              })
+            }
+            className="mt-2 h-24 w-full rounded-xl border p-3"
+          />
         </div>
 
-
-
         <div className="mt-6 flex justify-end gap-3">
-
 
           <button
             onClick={onClose}
@@ -268,24 +245,18 @@ function ReportBugModal({ isOpen, onClose, onSubmit }) {
             Cancel
           </button>
 
-
-
           <button
             onClick={handleSubmit}
             className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
           >
-            Submit Bug
+            {bug ? "Save Changes" : "Submit Bug"}
           </button>
-
 
         </div>
 
-
       </div>
-
     </div>
   );
 }
-
 
 export default ReportBugModal;

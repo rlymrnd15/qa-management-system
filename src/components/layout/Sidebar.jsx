@@ -31,7 +31,7 @@ function Sidebar({ game, platform, activePage, setActivePage }) {
   ];
 
   return (
-    <aside className="flex h-screen w-72 flex-col border-r bg-white">
+    <aside className="flex min-h-screen w-72 flex-col border-r bg-white">
 
       {/* Header */}
       <div className="border-b p-6">
