@@ -4,6 +4,7 @@ import BugTable from "../bugreport/BugTable";
 import BugStats from "../bugreport/BugStats";
 import BugDetailsModal from "../bugreport/BugDetailsModal";
 import SearchFilters from "../bugreport/SearchFilters";
+import { formatGameName } from "../../utils/formatGameName";
 
 const initialBugs = [
   {
@@ -43,7 +44,10 @@ const initialBugs = [
   },
 ];
 
-function BugReports() {
+function BugReports({
+  game,
+  platform,
+}) {
     const [openModal, setOpenModal] = useState(false);
     const [bugs, setBugs] = useState(() => {
       const savedBugs = localStorage.getItem("bugs");
@@ -90,6 +94,11 @@ function BugReports() {
     "All",
     ...new Set(bugs.map((bug) => bug.device)),
   ];
+const platformName = {
+    ios: "iOS",
+    android: "Android",
+    amazon: "Amazon",
+  }[platform] || platform;
 
   return (
     <div>
@@ -103,7 +112,7 @@ function BugReports() {
           </h1>
 
           <p className="mt-2 text-slate-500">
-            Track and manage reported game issues.
+            {formatGameName(game)} • {platformName}
           </p>
         </div>
 

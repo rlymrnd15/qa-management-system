@@ -57,8 +57,14 @@ function Sidebar({ game, platform, activePage, setActivePage }) {
           </h2>
 
 
-          <span className="mt-3 inline-block rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-700 capitalize">
-            {platform}
+          <span className="mt-3 inline-block rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-700">
+            {platform === "ios"
+              ? "iOS"
+              : platform === "android"
+              ? "Android"
+              : platform === "amazon"
+              ? "Amazon"
+              : platform}
           </span>
 
         </div>

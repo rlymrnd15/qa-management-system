@@ -17,7 +17,11 @@ function Workspace() {
         setActivePage={setActivePage}
       />
 
-      <MainContent activePage={activePage} />
+      <MainContent
+        activePage={activePage}
+        game={game}
+        platform={platform}
+      />
     </div>
   );
 }
