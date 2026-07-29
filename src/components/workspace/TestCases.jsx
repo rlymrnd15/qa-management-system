@@ -3,10 +3,12 @@ import TestCaseStats from "../testcase/TestCaseStats";
 import SearchFilters from "../testcase/SearchFilters";
 import TestCaseTable from "../testcase/TestCaseTable";
 import TestCaseDetailsModal from "../testcase/TestCaseDetailsModal";
+import { formatGameName } from "../../utils/formatGameName";
 
 const testCases = [
   {
     id: 1,
+    game: "snake-io",
     title: "Verify user can log in",
     priority: "High",
     platform: "iOS",
@@ -16,6 +18,7 @@ const testCases = [
   },
   {
     id: 2,
+    game: "piano-tiles-2",
     title: "Verify rewarded ad loads",
     priority: "Critical",
     platform: "Android",
@@ -25,6 +28,7 @@ const testCases = [
   },
   {
     id: 3,
+    game: "watch-pet",
     title: "Verify settings screen",
     priority: "Medium",
     platform: "Amazon",
@@ -34,12 +38,15 @@ const testCases = [
   },
 ];
 
-function TestCases() {
+function TestCases({
+  game,
+  platform,
+}) {
   
   const [search, setSearch] = useState("");
   const [priority, setPriority] = useState("All");
   const [status, setStatus] = useState("All");
-  const [platform, setPlatform] = useState("All");
+  const [selectedPlatform, setSelectedPlatform] = useState("All");
 
   const [selectedTestCase, setSelectedTestCase] = useState(null);
 
@@ -50,6 +57,12 @@ function TestCases() {
   
   console.log(platforms);
 
+  const platformName = {
+    ios: "iOS",
+    android: "Android",
+    amazon: "Amazon",
+  }[platform] || platform;
+  
   return (
     <div>
 
@@ -62,7 +75,7 @@ function TestCases() {
           </h1>
 
           <p className="mt-2 text-slate-500">
-            Manage and execute game test cases.
+            {formatGameName(game)} • {platformName}
           </p>
         </div>
 
@@ -91,9 +104,9 @@ function TestCases() {
         setPriority={setPriority}
         status={status}
         setStatus={setStatus}
-        platform={platform}
-        setPlatform={setPlatform}
-        platforms={["All", "iOS", "Android", "Amazon"]}
+        platform={selectedPlatform}
+        setPlatform={setSelectedPlatform}
+        platforms={platforms}
       />
 
       <TestCaseTable
