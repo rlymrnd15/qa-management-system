@@ -6,10 +6,13 @@ function ReportBugModal({
   onClose,
   onSubmit,
   bug = null,
+  build = null,
+  game = null,
+  platform = null,
 }) {
   const [formData, setFormData] = useState({
     title: "",
-    version: "",
+    version: build?.version || "",    
     device: "",
     osVersion: "",
     priority: "P2",
@@ -47,6 +50,9 @@ function ReportBugModal({
   const handleSubmit = () => {
     const newBug = {
       id: bug ? bug.id : Date.now(),
+      game: game || bug?.game,
+      platform: platform || bug?.platform,
+      build: build?.version || bug?.build,
       title: formData.title,
       priority: formData.priority,
       impact: formData.impact,

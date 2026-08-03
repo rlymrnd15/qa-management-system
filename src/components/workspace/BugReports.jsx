@@ -17,13 +17,7 @@ function BugReports({
   platform,
 }) {
     const [openModal, setOpenModal] = useState(false);
-    const [bugs, setBugs] = useState(() => {
-      const savedBugs = localStorage.getItem("bugs");
-
-      return savedBugs
-        ? JSON.parse(savedBugs)
-        : initialBugs;
-    });
+    const [bugs, setBugs] = useState(initialBugs);
     
     const [selectedBug, setSelectedBug] = useState(null);
     const [editingBug, setEditingBug] = useState(null);
