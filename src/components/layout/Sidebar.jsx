@@ -7,6 +7,7 @@ import {
   Gamepad2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { formatGameName } from "../../utils/formatGameName";
 
 function Sidebar({ game, platform, activePage, setActivePage }) {
   const navigate = useNavigate();
@@ -53,7 +54,7 @@ function Sidebar({ game, platform, activePage, setActivePage }) {
           </p>
 
           <h2 className="mt-1 text-lg font-semibold capitalize">
-            {game.replace(/-/g, " ")}
+            {formatGameName(game)}
           </h2>
 
 

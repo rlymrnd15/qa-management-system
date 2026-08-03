@@ -5,44 +5,12 @@ import BugStats from "../bugreport/BugStats";
 import BugDetailsModal from "../bugreport/BugDetailsModal";
 import SearchFilters from "../bugreport/SearchFilters";
 import { formatGameName } from "../../utils/formatGameName";
-
-const initialBugs = [
-  {
-    id: 1,
-    title: "Game crashes when starting level",
-    priority: "P0",
-    impact: "User Issue",
-    device: "iPhone 15 Pro",
-    version: "2.5.1",
-    status: "Open",
-    reporter: "Raily",
-    date: "July 21, 2026",
-  },
-
-  {
-    id: 2,
-    title: "Button overlaps on settings page",
-    priority: "P2",
-    impact: "User Issue",
-    device: "Samsung S24",
-    version: "2.5.1",
-    status: "Fixed",
-    reporter: "Raily",
-    date: "July 20, 2026",
-  },
-
-  {
-    id: 3,
-    title: "Missing analytics logs",
-    priority: "P1",
-    impact: "Logging Issue",
-    device: "Amazon Fire Tablet",
-    version: "2.5.0",
-    status: "Pending",
-    reporter: "QA Tester",
-    date: "July 19, 2026",
-  },
-];
+import BuildCard from "../build/BuildCard";
+import BuildsGrid from "../build/BuildsGrid";
+import BuildStats from "../build/BuildStats";
+import BuildDetails from "../build/BuildDetails";
+import builds from "../../data/builds";
+import initialBugs from "../../data/bugs";
 
 function BugReports({
   game,
@@ -59,6 +27,7 @@ function BugReports({
     
     const [selectedBug, setSelectedBug] = useState(null);
     const [editingBug, setEditingBug] = useState(null);
+    const [selectedBuild, setSelectedBuild] = useState(null);
     const [search, setSearch] = useState("");
     const [priority, setPriority] = useState("All");
     const [status, setStatus] = useState("All");
@@ -99,6 +68,7 @@ const platformName = {
     android: "Android",
     amazon: "Amazon",
   }[platform] || platform;
+  
 
   return (
     <div>
@@ -135,7 +105,7 @@ const platformName = {
       </div>
 
       {/* Stats */}
-      <BugStats bugs={bugs} />
+      <BuildStats builds={builds} />
 
 
       {/* Search and Filters */}
@@ -151,12 +121,18 @@ const platformName = {
         devices={devices}
       />
 
-      <BugTable
-        bugs={filteredBugs}
-        onViewBug={(bug) => {
-          setSelectedBug(bug);
-        }}
-      />
+      {selectedBuild ? (
+        <BuildDetails
+          build={selectedBuild}
+          bugs={bugs}
+          onBack={() => setSelectedBuild(null)}
+        />
+      ) : (
+        <BuildsGrid
+          builds={builds}
+          onSelectBuild={setSelectedBuild}
+        />
+      )}
 
         <ReportBugModal
           isOpen={openModal}

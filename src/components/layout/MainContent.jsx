@@ -4,13 +4,40 @@ import BugReports from "../workspace/BugReports";
 import DeviceMatrix from "../workspace/DeviceMatrix";
 
 
-function MainContent({ activePage }) {
+function MainContent({
+  activePage,
+  game,
+  platform,
+}) {
 
   const pages = {
-    dashboard: <Dashboard />,
-    testcases: <TestCases />,
-    bugreports: <BugReports />,
-    devicematrix: <DeviceMatrix />,
+    dashboard: (
+      <Dashboard
+        game={game}
+        platform={platform}
+      />
+    ),
+
+    testcases: (
+      <TestCases
+        game={game}
+        platform={platform}
+      />
+    ),
+
+    bugreports: (
+      <BugReports
+        game={game}
+        platform={platform}
+      />
+    ),
+
+    devicematrix: (
+      <DeviceMatrix
+        game={game}
+        platform={platform}
+      />
+    ),
   };
 
 
