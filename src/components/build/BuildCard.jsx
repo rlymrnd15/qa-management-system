@@ -10,11 +10,31 @@ import {
 
 function BuildCard({
   build,
+  bugs,
   onClick,
 }) {
-    const fixedPercentage = Math.round(
-        (build.fixed / build.totalBugs) * 100
+    const buildBugs = bugs.filter(
+      (bug) => bug.build === build.version
     );
+
+    const totalBugs = buildBugs.length;
+
+    const fixed = buildBugs.filter(
+      (bug) => bug.status === "Fixed"
+    ).length;
+
+    const pending = buildBugs.filter(
+      (bug) => bug.status === "Pending"
+    ).length;
+
+    const open = buildBugs.filter(
+      (bug) => bug.status === "Open"
+    ).length;
+
+    const fixedPercentage =
+      totalBugs === 0
+        ? 0
+        : Math.round((fixed / totalBugs) * 100);
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md">
@@ -64,7 +84,7 @@ function BuildCard({
                 </p>
             </div>
             <h3 className="mt-2 text-5xl font-bold">
-                {build.totalBugs}
+                {totalBugs}
             </h3>
        </div>
 
@@ -108,7 +128,7 @@ function BuildCard({
             </p>
 
             <h4 className="text-2xl font-bold">
-            {build.fixed}
+            {fixed}
             </h4>
 
         </div>
@@ -125,7 +145,7 @@ function BuildCard({
             </p>
 
             <h4 className="text-2xl font-bold">
-            {build.pending}
+            {pending}
             </h4>
 
         </div>
@@ -142,7 +162,7 @@ function BuildCard({
             </p>
 
             <h4 className="text-2xl font-bold">
-            {build.open}
+            {open}
             </h4>
 
         </div>

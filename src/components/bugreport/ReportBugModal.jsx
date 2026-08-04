@@ -18,6 +18,7 @@ function ReportBugModal({
     priority: "P2",
     impact: "User Issue",
     steps: "",
+    evidenceLink: "",
     developerComments: "",
   });
 
@@ -31,21 +32,23 @@ function ReportBugModal({
         priority: bug.priority || "P2",
         impact: bug.impact || "User Issue",
         steps: bug.steps || "",
+        evidenceLink: bug.evidenceLink || "",
         developerComments: bug.developerComments || "",
       });
     } else {
       setFormData({
         title: "",
-        version: "",
+        version: build?.version || "",
         device: "",
         osVersion: "",
         priority: "P2",
         impact: "User Issue",
         steps: "",
+        evidenceLink: "",
         developerComments: "",
       });
     }
-  }, [bug, isOpen]);
+  }, [bug, build, isOpen]);
 
   const handleSubmit = () => {
     const newBug = {
@@ -60,6 +63,7 @@ function ReportBugModal({
       version: formData.version,
       osVersion: formData.osVersion,
       steps: formData.steps,
+      evidenceLink: formData.evidenceLink,
       developerComments: formData.developerComments,
       status: bug ? bug.status : "Open",
       reporter: bug ? bug.reporter : "Raily",
@@ -115,13 +119,21 @@ function ReportBugModal({
 
             <input
               value={formData.version}
+              readOnly={!!build}
               onChange={(e) =>
                 setFormData({
                   ...formData,
                   version: e.target.value,
                 })
               }
-              className="mt-2 w-full rounded-xl border p-3"
+              className={`
+                mt-2 w-full rounded-xl border p-3
+                ${
+                  build
+                    ? "bg-slate-100 text-slate-500 cursor-not-allowed"
+                    : ""
+                }
+              `}
               placeholder="Example: 2.5.1"
             />
           </div>
@@ -224,6 +236,25 @@ function ReportBugModal({
             placeholder="1. Open game..."
           />
         </div>
+
+        <div className="mt-5">
+          <label className="text-sm font-semibold">
+            Evidence Link
+          </label>
+
+          <input
+            value={formData.evidenceLink}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                evidenceLink: e.target.value,
+              })
+            }
+            className="mt-2 w-full rounded-xl border p-3"
+            placeholder="https://drive.google.com/..."
+          />
+        </div>
+
 
         <div className="mt-5">
           <label className="text-sm font-semibold">

@@ -119,11 +119,13 @@ const platformName = {
         <BuildDetails
           build={selectedBuild}
           bugs={bugs}
+          setBugs={setBugs}
           onBack={() => setSelectedBuild(null)}
         />
       ) : (
         <BuildsGrid
           builds={builds}
+          bugs={bugs}
           onSelectBuild={setSelectedBuild}
         />
       )}

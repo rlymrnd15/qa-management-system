@@ -2,6 +2,7 @@ import BuildCard from "./BuildCard";
 
 function BuildsGrid({
   builds,
+  bugs,
   onSelectBuild,
 }) {
   return (
@@ -10,6 +11,7 @@ function BuildsGrid({
         <BuildCard
           key={build.id}
           build={build}
+          bugs={bugs}
           onClick={() => onSelectBuild(build)}
         />
       ))}

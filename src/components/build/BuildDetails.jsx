@@ -6,6 +6,7 @@ import ReportBugModal from "../bugreport/ReportBugModal";
 function BuildDetails({
   build,
   bugs,
+  setBugs,
   onBack,
 }) {
 
@@ -145,8 +146,12 @@ function BuildDetails({
         <ReportBugModal
           isOpen={openModal}
           onClose={() => setOpenModal(false)}
+          build={build}
+          game={buildBugs[0]?.game}
+          platform={buildBugs[0]?.platform}
           onSubmit={(newBug) => {
-            console.log(newBug);
+              setBugs((prevBugs) => [...prevBugs, newBug]);
+
             setOpenModal(false);
           }}
         />

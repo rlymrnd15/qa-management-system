@@ -60,6 +60,34 @@ function BugDetailsModal({
 
         </div>
 
+        {/* Evidence Link */}
+        <div className="mt-6">
+
+          <h3 className="mb-2 text-lg font-semibold">
+            Evidence Link
+          </h3>
+
+          <div className="rounded-xl bg-slate-100 p-4">
+
+            {bug.evidenceLink ? (
+              <a
+                href={bug.evidenceLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-blue-600 underline hover:text-blue-800"
+              >
+                Open Evidence
+              </a>
+            ) : (
+              <p className="text-slate-500">
+                No evidence attached.
+              </p>
+            )}
+
+          </div>
+
+        </div>
+
         {/* Developer Comments */}
         <div className="mt-6">
 
