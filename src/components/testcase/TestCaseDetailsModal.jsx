@@ -1,6 +1,11 @@
 import { X } from "lucide-react";
 
-function TestCaseDetailsModal({ testCase, onClose }) {
+function TestCaseDetailsModal({
+  testCase,
+  onClose,
+  onEdit,
+  onDelete,
+}) {
   if (!testCase) return null;
 
   return (
@@ -18,8 +23,11 @@ function TestCaseDetailsModal({ testCase, onClose }) {
             </p>
           </div>
 
-          <button onClick={onClose}>
-            <X />
+          <button
+            onClick={onClose}
+            className="rounded-xl px-5 py-3 hover:bg-slate-100"
+          >
+            Cancel
           </button>
         </div>
 
@@ -61,13 +69,29 @@ function TestCaseDetailsModal({ testCase, onClose }) {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-end">
+        <div className="mt-8 flex justify-end gap-3">
+
+          <button
+            onClick={() => onDelete(testCase)}
+            className="rounded-xl bg-red-600 px-6 py-3 font-semibold text-white hover:bg-red-700"
+          >
+            Delete
+          </button>
+
+          <button
+            onClick={() => onEdit(testCase)}
+            className="rounded-xl border px-6 py-3 font-semibold hover:bg-slate-100"
+          >
+            Edit
+          </button>
+
           <button
             onClick={onClose}
             className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
           >
             Close
           </button>
+
         </div>
 
       </div>
