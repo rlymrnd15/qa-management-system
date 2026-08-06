@@ -93,7 +93,7 @@ function ReportTestCaseModal({
 
           <div>
             <label className="text-sm font-semibold">
-              Issue Title
+              Test Case Title
             </label>
 
             <input
@@ -236,7 +236,7 @@ function ReportTestCaseModal({
             onClick={handleSubmit}
             className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
           >
-            {testCase ? "Save Changes" : "Submit Test Case"}
+            {testCase ? "Save Changes" : "Create Test Case"}
           </button>
 
         </div>
