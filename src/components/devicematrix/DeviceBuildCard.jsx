@@ -7,30 +7,14 @@ import {
   CircleAlert,
 } from "lucide-react";
 
-import deviceTests from "../../data/deviceTests";
-
 function DeviceBuildCard({
   build,
   onOpen,
 }) {
-  const buildDevices = deviceTests.filter(
-    (device) => device.build === build.version
-  );
 
-  const totalDevices = buildDevices.length;
-
-  const passed = buildDevices.filter(
-    (device) => device.progress === 100
-  ).length;
-
-  const failed = buildDevices.filter(
-    (device) => device.uiTesting === "FAIL"
-  ).length;
-
-  const passedPercentage =
-    totalDevices === 0
-      ? 0
-      : Math.round((passed / totalDevices) * 100);
+  const totalDevices = build.totalDevices || 0;
+  const passed = build.passed || 0;
+  const failed = build.failed || 0;
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md">
@@ -41,12 +25,19 @@ function DeviceBuildCard({
         <div className="flex items-center gap-3">
 
           {build.latest ? (
-            <Rocket className="text-blue-600" size={26} />
+            <Rocket
+              className="text-blue-600"
+              size={26}
+            />
           ) : (
-            <Package className="text-slate-500" size={26} />
+            <Package
+              className="text-slate-500"
+              size={26}
+            />
           )}
 
           <div>
+
             <h2 className="text-2xl font-bold">
               Build v{build.version}
             </h2>
@@ -54,6 +45,7 @@ function DeviceBuildCard({
             <p className="text-sm text-slate-500">
               Released {build.releaseDate}
             </p>
+
           </div>
 
         </div>
@@ -66,6 +58,7 @@ function DeviceBuildCard({
 
       </div>
 
+      {/* Divider */}
       <div className="my-6 h-px bg-slate-200" />
 
       {/* Total Devices */}
@@ -74,7 +67,7 @@ function DeviceBuildCard({
         <div className="flex items-center gap-2">
 
           <Smartphone
-            className="text-blue-500"
+            className="text-blue-600"
             size={20}
           />
 
@@ -90,37 +83,10 @@ function DeviceBuildCard({
 
       </div>
 
-      {/* Progress */}
-      <div className="mt-6">
-
-        <div className="mb-2 flex justify-between">
-
-          <p className="text-sm font-medium text-slate-500">
-            Testing Progress
-          </p>
-
-          <p className="text-sm font-semibold text-blue-600">
-            {passedPercentage}% Complete
-          </p>
-
-        </div>
-
-        <div className="h-3 overflow-hidden rounded-full bg-slate-200">
-
-          <div
-            className="h-full rounded-full bg-blue-600 transition-all"
-            style={{
-              width: `${passedPercentage}%`,
-            }}
-          />
-
-        </div>
-
-      </div>
-
       {/* Status */}
       <div className="mt-6 grid grid-cols-2 gap-4">
 
+        {/* Passed */}
         <div className="rounded-xl bg-green-50 p-4">
 
           <CircleCheck
@@ -138,6 +104,7 @@ function DeviceBuildCard({
 
         </div>
 
+        {/* Failed */}
         <div className="rounded-xl bg-red-50 p-4">
 
           <CircleAlert
@@ -172,10 +139,15 @@ function DeviceBuildCard({
           hover:bg-blue-700
         "
       >
+
         <div className="flex items-center justify-center gap-2">
-          Open Device Matrix
+
+          View Device Tests
+
           <ArrowRight size={18} />
+
         </div>
+
       </button>
 
     </div>

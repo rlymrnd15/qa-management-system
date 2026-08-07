@@ -145,6 +145,20 @@ function DeviceTestModal({
     },
   ];
 
+    const testResults = testFields.map(
+        (test) => formData[test.field]
+    );
+
+    const completedTests = testResults.filter(
+        (result) => result !== "Not Run"
+    ).length;
+
+    const totalTests = testResults.length;
+
+    const progress = Math.round(
+        (completedTests / totalTests) * 100
+    );
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
 
@@ -281,6 +295,38 @@ function DeviceTestModal({
             </div>
           ))}
 
+          {/* Live Completion Progress */}
+        <div className="mt-8 rounded-xl border bg-slate-50 p-5">
+
+        <div className="mb-3 flex items-center justify-between">
+
+            <div>
+            <p className="font-semibold">
+                Completion Progress
+            </p>
+
+            <p className="text-sm text-slate-500">
+                {completedTests} / {totalTests} Tests Completed
+            </p>
+            </div>
+
+            <p className="text-xl font-bold text-blue-600">
+            {progress}%
+            </p>
+
+        </div>
+
+        <div className="h-3 overflow-hidden rounded-full bg-slate-200">
+
+            <div
+            className="h-full rounded-full bg-blue-600 transition-all duration-300"
+            style={{
+                width: `${progress}%`,
+            }}
+            />
+
+                 </div>
+            </div>
         </div>
 
         {/* Buttons */}

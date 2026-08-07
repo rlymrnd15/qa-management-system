@@ -1,5 +1,4 @@
 import { useState } from "react";
-import deviceTests from "../../data/deviceTests";
 
 import DeviceStats from "./DeviceStats";
 import DeviceSearchFilters from "./DeviceSearchFilters";
@@ -12,6 +11,8 @@ function DeviceBuildDetails({
   onBack,
   game,
   platform,
+  deviceTests,
+  setDeviceTests,
 }) {
 
   const buildDevices = deviceTests.filter(
@@ -69,7 +70,7 @@ const filteredDevices = deviceList.filter((device) =>
     </button>
 
       {/* Device Matrix Components */}
-      <DeviceStats deviceList={filteredDevices} />
+      <DeviceStats deviceList={deviceList} />
 
 <DeviceSearchFilters
   search={search}
@@ -92,12 +93,24 @@ const filteredDevices = deviceList.filter((device) =>
     setSelectedDevice(null);
   }}
   onDelete={(device) => {
-    setDeviceList((prev) =>
-      prev.filter((item) => item.id !== device.id)
-    );
+  const confirmed = window.confirm(
+    `Are you sure you want to delete the device test for ${device.device}?`
+  );
 
-    setSelectedDevice(null);
-  }}
+  if (!confirmed) return;
+
+  // Update the current device list
+  setDeviceList((prev) =>
+    prev.filter((item) => item.id !== device.id)
+  );
+
+  // Update the shared device list
+  setDeviceTests((prev) =>
+    prev.filter((item) => item.id !== device.id)
+  );
+
+  setSelectedDevice(null);
+}}
 />
 
     <DeviceTestModal
@@ -116,23 +129,44 @@ const filteredDevices = deviceList.filter((device) =>
 
         onSubmit={(newDevice) => {
             if (editingDevice) {
-            setDeviceList((prev) =>
+
+                // Update current device list
+                setDeviceList((prev) =>
                 prev.map((item) =>
-                item.id === newDevice.id
+                    item.id === newDevice.id
                     ? newDevice
                     : item
                 )
-            );
+                );
+
+                // Update shared device list
+                setDeviceTests((prev) =>
+                prev.map((item) =>
+                    item.id === newDevice.id
+                    ? newDevice
+                    : item
+                )
+                );
+
             } else {
-            setDeviceList((prev) => [
+
+                // Add to current device list
+                setDeviceList((prev) => [
                 newDevice,
                 ...prev,
-            ]);
+                ]);
+
+                // Add to shared device list
+                setDeviceTests((prev) => [
+                newDevice,
+                ...prev,
+                ]);
+
             }
 
             setEditingDevice(null);
             setOpenModal(false);
-        }}
+            }}
         />
     </div>
   );
