@@ -1,6 +1,11 @@
-function DeviceStats({ deviceList }) {
-  const total = deviceList.length;
+import {
+  Smartphone,
+  CircleCheck,
+  CircleAlert,
+  Clock,
+} from "lucide-react";
 
+function DeviceStats({ deviceList }) {
   const testFields = [
     "generalTest",
     "deviceHeating",
@@ -14,70 +19,128 @@ function DeviceStats({ deviceList }) {
     "viralSocial",
   ];
 
-  // A device is FAILED if at least one test has FAIL
-  const failed = deviceList.filter((device) =>
-    testFields.some(
-      (field) => device[field] === "FAIL"
-    )
-  ).length;
-
-  // A device is PASSED if:
-  // 1. All tests are completed
-  // 2. No test has FAIL
   const passed = deviceList.filter((device) => {
+    const allTestsPassed = testFields.every(
+      (field) => device[field] === "PASS"
+    );
 
-    const hasFailedTest = testFields.some(
+    return (
+      device.progress === 100 &&
+      allTestsPassed
+    );
+  }).length;
+
+  const failed = deviceList.filter((device) => {
+    return testFields.some(
+      (field) => device[field] === "FAIL"
+    );
+  }).length;
+
+  const incomplete = deviceList.filter((device) => {
+    const hasFail = testFields.some(
       (field) => device[field] === "FAIL"
     );
 
-    const allTestsCompleted = testFields.every(
-      (field) =>
-        device[field] !== "Not Run" &&
-        device[field] !== undefined
+    const allTestsPassed = testFields.every(
+      (field) => device[field] === "PASS"
     );
 
-    return allTestsCompleted && !hasFailedTest;
-
+    return (
+      !hasFail &&
+      !(
+        device.progress === 100 &&
+        allTestsPassed
+      )
+    );
   }).length;
 
   return (
-    <div className="mb-8 grid gap-4 md:grid-cols-3">
+    <div className="mb-8 grid gap-6 md:grid-cols-4">
 
       {/* Devices Tested */}
-      <div className="rounded-xl bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border bg-white p-6 shadow-sm">
 
-        <p className="text-slate-500">
-          Devices Tested
-        </p>
+        <div className="flex items-center gap-2">
 
-        <h2 className="mt-2 text-4xl font-bold">
-          {total}
+          <Smartphone
+            className="text-blue-600"
+            size={20}
+          />
+
+          <p className="text-sm font-medium text-slate-500">
+            Devices Tested
+          </p>
+
+        </div>
+
+        <h2 className="mt-3 text-4xl font-bold">
+          {deviceList.length}
         </h2>
 
       </div>
 
       {/* Passed */}
-      <div className="rounded-xl bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border bg-green-50 p-6">
 
-        <p className="text-slate-500">
-          Passed
-        </p>
+        <div className="flex items-center gap-2">
 
-        <h2 className="mt-2 text-4xl font-bold text-green-600">
+          <CircleCheck
+            className="text-green-600"
+            size={20}
+          />
+
+          <p className="text-sm font-medium text-slate-500">
+            Passed
+          </p>
+
+        </div>
+
+        <h2 className="mt-3 text-4xl font-bold text-green-700">
           {passed}
         </h2>
 
       </div>
 
       {/* Failed */}
-      <div className="rounded-xl bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border bg-red-50 p-6">
 
-        <p className="text-slate-500">
-          Failed
-        </p>
+        <div className="flex items-center gap-2">
 
-        <h2 className="mt-2 text-4xl font-bold text-red-600">
+          <CircleAlert
+            className="text-red-600"
+            size={20}
+          />
+
+          <p className="text-sm font-medium text-slate-500">
+            Failed
+          </p>
+
+        </div>
+
+        <h2 className="mt-3 text-4xl font-bold text-red-700">
           {failed}
+        </h2>
+
+      </div>
+
+      {/* Incomplete */}
+      <div className="rounded-2xl border bg-yellow-50 p-6">
+
+        <div className="flex items-center gap-2">
+
+          <Clock
+            className="text-yellow-600"
+            size={20}
+          />
+
+          <p className="text-sm font-medium text-slate-500">
+            Incomplete
+          </p>
+
+        </div>
+
+        <h2 className="mt-3 text-4xl font-bold text-yellow-700">
+          {incomplete}
         </h2>
 
       </div>

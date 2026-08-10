@@ -1,23 +1,56 @@
+import {
+  Smartphone,
+  CircleCheck,
+  CircleAlert,
+  Clock,
+} from "lucide-react";
+
 function DeviceTable({
   deviceList,
   onViewDevice,
 }) {
-  if (deviceList.length === 0) {
-    return (
-      <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
-        <p className="text-slate-500">
-          No device tests found.
-        </p>
-      </div>
+  const testFields = [
+    "generalTest",
+    "deviceHeating",
+    "upgradeTesting",
+    "adsTesting",
+    "uiTesting",
+    "destructiveTesting",
+    "badInternet",
+    "performanceTesting",
+    "iapTesting",
+    "viralSocial",
+  ];
+
+  const getDeviceStatus = (device) => {
+    const hasFail = testFields.some(
+      (field) => device[field] === "FAIL"
     );
-  }
+
+    if (hasFail) {
+      return "FAILED";
+    }
+
+    const allTestsPassed = testFields.every(
+      (field) => device[field] === "PASS"
+    );
+
+    if (
+      device.progress === 100 &&
+      allTestsPassed
+    ) {
+      return "PASSED";
+    }
+
+    return "INCOMPLETE";
+  };
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
 
-      <table className="min-w-full">
+      <table className="w-full">
 
-        <thead className="bg-slate-100">
+        <thead className="border-b bg-slate-50">
 
           <tr>
 
@@ -47,53 +80,92 @@ function DeviceTable({
 
         <tbody>
 
-          {deviceList.map((device) => {
+          {deviceList.map((device, index) => {
 
-            const status =
-              device.uiTesting === "FAIL"
-                ? "FAIL"
-                : "PASS";
+            const status = getDeviceStatus(device);
 
             return (
-
               <tr
-                key={device.id}
+                key={device.id || index}
                 onClick={() => onViewDevice(device)}
-                className="cursor-pointer border-t hover:bg-slate-50"
+                className="cursor-pointer border-b last:border-b-0 hover:bg-slate-50"
               >
 
-                <td className="px-6 py-4 font-medium">
-                  {device.device}
+                {/* Device */}
+                <td className="px-6 py-5">
+
+                  <div className="flex items-center gap-3">
+
+                    <Smartphone
+                      className="text-blue-600"
+                      size={20}
+                    />
+
+                    <span className="font-semibold">
+                      {device.deviceName ||
+                        device.device ||
+                        `Device ${index + 1}`}
+                    </span>
+
+                  </div>
+
                 </td>
 
-                <td className="px-6 py-4">
-                  {device.osVersion}
+                {/* OS Version */}
+                <td className="px-6 py-5 text-sm text-slate-600">
+                  {device.osVersion || "-"}
                 </td>
 
-                <td className="px-6 py-4">
-                  {device.tester}
+                {/* Tester */}
+                <td className="px-6 py-5 text-sm text-slate-600">
+                  {device.tester || "-"}
                 </td>
 
-                <td className="px-6 py-4">
-                  {device.progress}%
-                </td>
+                {/* Progress */}
+                <td className="px-6 py-5">
 
-                <td className="px-6 py-4">
-
-                  <span
-                    className={`rounded-full px-3 py-1 text-sm font-semibold ${
-                      status === "PASS"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {status}
+                  <span className="font-medium">
+                    {device.progress || 0}%
                   </span>
 
                 </td>
 
-              </tr>
+                {/* Status */}
+                <td className="px-6 py-5">
 
+                  {status === "PASSED" && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">
+
+                      <CircleCheck size={16} />
+
+                      PASS
+
+                    </span>
+                  )}
+
+                  {status === "FAILED" && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-sm font-semibold text-red-700">
+
+                      <CircleAlert size={16} />
+
+                      FAIL
+
+                    </span>
+                  )}
+
+                  {status === "INCOMPLETE" && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-sm font-semibold text-yellow-700">
+
+                      <Clock size={16} />
+
+                      INCOMPLETE
+
+                    </span>
+                  )}
+
+                </td>
+
+              </tr>
             );
           })}
 

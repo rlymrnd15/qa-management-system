@@ -5,11 +5,15 @@ import {
   Smartphone,
   CircleCheck,
   CircleAlert,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 
 function DeviceBuildCard({
   build,
   onOpen,
+  onEdit,
+  onDelete,
 }) {
 
   const totalDevices = build.totalDevices || 0;
@@ -124,11 +128,36 @@ function DeviceBuildCard({
 
       </div>
 
-      {/* Button */}
+      {/* Edit / Delete */}
+      <div className="mt-6 flex gap-3">
+
+        <button
+          onClick={onEdit}
+          className="flex-1 rounded-xl border border-slate-300 py-3 font-semibold text-slate-700 hover:bg-slate-100"
+        >
+          <div className="flex items-center justify-center gap-2">
+            <Pencil size={17} />
+            Edit
+          </div>
+        </button>
+
+        <button
+          onClick={onDelete}
+          className="flex-1 rounded-xl border border-red-200 py-3 font-semibold text-red-600 hover:bg-red-50"
+        >
+          <div className="flex items-center justify-center gap-2">
+            <Trash2 size={17} />
+            Delete
+          </div>
+        </button>
+
+      </div>
+
+      {/* View Device Tests */}
       <button
         onClick={onOpen}
         className="
-          mt-8
+          mt-4
           w-full
           rounded-xl
           bg-blue-600
@@ -139,15 +168,10 @@ function DeviceBuildCard({
           hover:bg-blue-700
         "
       >
-
         <div className="flex items-center justify-center gap-2">
-
           View Device Tests
-
           <ArrowRight size={18} />
-
         </div>
-
       </button>
 
     </div>
