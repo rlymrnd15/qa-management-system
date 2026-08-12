@@ -7,14 +7,19 @@ function BuildsGrid({
 }) {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
+
       {builds.map((build) => (
         <BuildCard
           key={build.id}
           build={build}
           bugs={bugs}
-          onClick={() => onSelectBuild(build)}
+          onClick={() => {
+            console.log("GRID CLICK:", build);
+            onSelectBuild(build);
+          }}
         />
       ))}
+
     </div>
   );
 }

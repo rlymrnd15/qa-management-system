@@ -13,28 +13,28 @@ function BuildCard({
   bugs,
   onClick,
 }) {
-    const buildBugs = bugs.filter(
-      (bug) => bug.build === build.version
-    );
+  const buildBugs = bugs.filter(
+    (bug) => bug.build === build.version
+  );
 
-    const totalBugs = buildBugs.length;
+  const totalBugs = buildBugs.length;
 
-    const fixed = buildBugs.filter(
-      (bug) => bug.status === "Fixed"
-    ).length;
+  const fixed = buildBugs.filter(
+    (bug) => bug.status === "Fixed"
+  ).length;
 
-    const pending = buildBugs.filter(
-      (bug) => bug.status === "Pending"
-    ).length;
+  const pending = buildBugs.filter(
+    (bug) => bug.status === "Pending"
+  ).length;
 
-    const open = buildBugs.filter(
-      (bug) => bug.status === "Open"
-    ).length;
+  const open = buildBugs.filter(
+    (bug) => bug.status === "Open"
+  ).length;
 
-    const fixedPercentage =
-      totalBugs === 0
-        ? 0
-        : Math.round((fixed / totalBugs) * 100);
+  const fixedPercentage =
+    totalBugs === 0
+      ? 0
+      : Math.round((fixed / totalBugs) * 100);
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md">
@@ -45,9 +45,15 @@ function BuildCard({
         <div className="flex items-center gap-3">
 
           {build.latest ? (
-            <Rocket className="text-blue-600" size={26} />
+            <Rocket
+              className="text-blue-600"
+              size={26}
+            />
           ) : (
-            <Package className="text-slate-500" size={26} />
+            <Package
+              className="text-slate-500"
+              size={26}
+            />
           )}
 
           <div>
@@ -75,102 +81,103 @@ function BuildCard({
 
       {/* Total Bugs */}
       <div>
-            <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+          <Bug
+            className="text-red-500"
+            size={20}
+          />
 
-                <Bug className="text-red-500" size={20} />
-
-                <p className="text-sm font-medium text-slate-500">
-                Total Bugs
-                </p>
-            </div>
-            <h3 className="mt-2 text-5xl font-bold">
-                {totalBugs}
-            </h3>
-       </div>
-
-       {/*progress bar */}
-       <div className="mt-6">
-            <div className="mb-2 flex justify-between">
-
-                <p className="text-sm font-medium text-slate-500">
-                Resolution Progress
-                </p>
-
-                <p className="text-sm font-semibold text-blue-600">
-                {fixedPercentage}% Fixed
-                </p>
-
-            </div>
-            <div className="h-3 overflow-hidden rounded-full bg-slate-200">
-
-                <div
-                className="h-full rounded-full bg-blue-600 transition-all"
-                style={{
-                    width: `${fixedPercentage}%`,
-                }}
-                />
-            </div>
+          <p className="text-sm font-medium text-slate-500">
+            Total Bugs
+          </p>
         </div>
 
-    
+        <h3 className="mt-2 text-5xl font-bold">
+          {totalBugs}
+        </h3>
+      </div>
+
+      {/* Progress */}
+      <div className="mt-6">
+
+        <div className="mb-2 flex justify-between">
+
+          <p className="text-sm font-medium text-slate-500">
+            Resolution Progress
+          </p>
+
+          <p className="text-sm font-semibold text-blue-600">
+            {fixedPercentage}% Fixed
+          </p>
+
+        </div>
+
+        <div className="h-3 overflow-hidden rounded-full bg-slate-200">
+
+          <div
+            className="h-full rounded-full bg-blue-600 transition-all"
+            style={{
+              width: `${fixedPercentage}%`,
+            }}
+          />
+
+        </div>
+
+      </div>
+
       {/* Status */}
       <div className="mt-6 grid grid-cols-3 gap-4">
 
         <div className="rounded-xl bg-green-50 p-4">
-
-            <CircleCheck
+          <CircleCheck
             className="mb-2 text-green-600"
             size={20}
-            />
+          />
 
-            <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500">
             Fixed
-            </p>
+          </p>
 
-            <h4 className="text-2xl font-bold">
+          <h4 className="text-2xl font-bold">
             {fixed}
-            </h4>
-
+          </h4>
         </div>
 
         <div className="rounded-xl bg-yellow-50 p-4">
-
-            <Clock3
+          <Clock3
             className="mb-2 text-yellow-600"
             size={20}
-            />
+          />
 
-            <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500">
             Pending
-            </p>
+          </p>
 
-            <h4 className="text-2xl font-bold">
+          <h4 className="text-2xl font-bold">
             {pending}
-            </h4>
-
+          </h4>
         </div>
 
         <div className="rounded-xl bg-red-50 p-4">
-
-            <CircleAlert
+          <CircleAlert
             className="mb-2 text-red-600"
             size={20}
-            />
+          />
 
-            <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500">
             Open
-            </p>
+          </p>
 
-            <h4 className="text-2xl font-bold">
+          <h4 className="text-2xl font-bold">
             {open}
-            </h4>
-
+          </h4>
         </div>
 
-        </div>
+      </div>
 
-      {/* Button */}
+      {/* View Bugs */}
       <button
+        type="button"
         onClick={onClick}
         className="
           mt-8
@@ -185,14 +192,13 @@ function BuildCard({
         "
       >
         <div className="flex items-center justify-center gap-2">
-        View Bugs
-        <ArrowRight size={18} />
+          View Bugs
+          <ArrowRight size={18} />
         </div>
       </button>
 
     </div>
   );
 }
-
 
 export default BuildCard;

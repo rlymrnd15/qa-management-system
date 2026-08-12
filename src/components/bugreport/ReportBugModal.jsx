@@ -53,9 +53,13 @@ function ReportBugModal({
   const handleSubmit = () => {
     const newBug = {
       id: bug ? bug.id : Date.now(),
+
       game: game || bug?.game,
       platform: platform || bug?.platform,
-      build: build?.version || bug?.build,
+
+      // Use the selected build first
+      build: build?.version || bug?.build || formData.version,
+
       title: formData.title,
       priority: formData.priority,
       impact: formData.impact,
@@ -65,6 +69,7 @@ function ReportBugModal({
       steps: formData.steps,
       evidenceLink: formData.evidenceLink,
       developerComments: formData.developerComments,
+
       status: bug ? bug.status : "Open",
       reporter: bug ? bug.reporter : "Raily",
       date: bug ? bug.date : new Date().toLocaleDateString(),
