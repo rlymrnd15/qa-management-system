@@ -1,11 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 import TestCaseStats from "../testcase/TestCaseStats";
 import SearchFilters from "../testcase/SearchFilters";
 import TestCaseTable from "../testcase/TestCaseTable";
 import TestCaseDetailsModal from "../testcase/TestCaseDetailsModal";
 import { formatGameName } from "../../utils/formatGameName";
-import testCases from "../../data/testCases";
+
 import ReportTestCaseModal from "../testcase/ReportTestCaseModal";
+
+import {
+  getTestCases,
+  addTestCase,
+  updateTestCase,
+  deleteTestCase,
+} from "../../services/testCaseService";
 
 
 function TestCases({
@@ -22,7 +30,24 @@ function TestCases({
   const [editingTestCase, setEditingTestCase] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
-  const [testCaseList, setTestCaseList] = useState(testCases);
+  const [testCaseList, setTestCaseList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadTestCases = async () => {
+      try {
+        const data = await getTestCases();
+
+        setTestCaseList(data);
+      } catch (error) {
+        console.error("Error loading test cases:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTestCases();
+  }, []);
 
   const platforms = [
     "All",
@@ -38,30 +63,40 @@ function TestCases({
   }[platform] || platform;
 
   const filteredTestCases = testCaseList.filter((testCase) => {
-  const matchesSearch =
-    testCase.title
-      .toLowerCase()
-      .includes(search.toLowerCase());
+    const matchesSearch =
+      testCase.title
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
-  const matchesPriority =
-    priority === "All" ||
-    testCase.priority === priority;
+    const matchesPriority =
+      priority === "All" ||
+      testCase.priority === priority;
 
-  const matchesStatus =
-    status === "All" ||
-    testCase.status === status;
+    const matchesStatus =
+      status === "All" ||
+      testCase.status === status;
 
-  const matchesPlatform =
-    selectedPlatform === "All" ||
-    testCase.platform === selectedPlatform;
+    const matchesPlatform =
+      selectedPlatform === "All" ||
+      testCase.platform === selectedPlatform;
 
-  return (
-    matchesSearch &&
-    matchesPriority &&
-    matchesStatus &&
-    matchesPlatform
-  );
-});
+    return (
+      matchesSearch &&
+      matchesPriority &&
+      matchesStatus &&
+      matchesPlatform
+    );
+  });
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[300px] items-center justify-center">
+        <p className="text-slate-500">
+          Loading test cases...
+        </p>
+      </div>
+    );
+  }
   
   return (
     <div>
@@ -147,24 +182,42 @@ function TestCases({
         build={{ version: "2.5.2" }} // temporary
         game={game}
         platform={platform}
-        onSubmit={(newTestCase) => {
-          if (editingTestCase) {
-            setTestCaseList((prev) =>
-              prev.map((item) =>
-                item.id === newTestCase.id
-                  ? newTestCase
-                  : item
-              )
-            );
-          } else {
-            setTestCaseList((prev) => [
-              newTestCase,
-              ...prev,
-            ]);
-          }
 
-          setEditingTestCase(null);
-          setOpenModal(false);
+        onSubmit={async (newTestCase) => {
+          try {
+            if (editingTestCase) {
+              const updatedTestCase = await updateTestCase(
+                editingTestCase.id,
+                newTestCase
+              );
+
+              setTestCaseList((prev) =>
+                prev.map((item) =>
+                  item.id === editingTestCase.id
+                    ? updatedTestCase
+                    : item
+                )
+              );
+            } else {
+              const savedTestCase = await addTestCase({
+                ...newTestCase,
+                game,
+                platform,
+                build: "2.5.2",
+              });
+
+              setTestCaseList((prev) => [
+                savedTestCase,
+                ...prev,
+              ]);
+            }
+
+            setEditingTestCase(null);
+            setOpenModal(false);
+          } catch (error) {
+            console.error("Error saving test case:", error);
+            alert("Failed to save test case.");
+          }
         }}
       />
 

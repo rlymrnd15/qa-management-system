@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 function TestCaseDetailsModal({
   testCase,
@@ -6,6 +7,9 @@ function TestCaseDetailsModal({
   onEdit,
   onDelete,
 }) {
+  const { role } = useAuth();
+  const isQA = role?.toLowerCase() === "qa";
+
   if (!testCase) return null;
 
   return (
@@ -71,28 +75,32 @@ function TestCaseDetailsModal({
 
         <div className="mt-8 flex justify-end gap-3">
 
-          <button
-            onClick={() => onDelete(testCase)}
-            className="rounded-xl bg-red-600 px-6 py-3 font-semibold text-white hover:bg-red-700"
-          >
-            Delete
-          </button>
+        {isQA && (
+          <>
+            <button
+              onClick={() => onDelete(testCase)}
+              className="rounded-xl bg-red-600 px-6 py-3 font-semibold text-white hover:bg-red-700"
+            >
+              Delete
+            </button>
 
-          <button
-            onClick={() => onEdit(testCase)}
-            className="rounded-xl border px-6 py-3 font-semibold hover:bg-slate-100"
-          >
-            Edit
-          </button>
+            <button
+              onClick={() => onEdit(testCase)}
+              className="rounded-xl border px-6 py-3 font-semibold hover:bg-slate-100"
+            >
+              Edit
+            </button>
+          </>
+        )}
 
-          <button
-            onClick={onClose}
-            className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
-          >
-            Close
-          </button>
+        <button
+          onClick={onClose}
+          className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+        >
+          Close
+        </button>
 
-        </div>
+      </div>
 
       </div>
     </div>
