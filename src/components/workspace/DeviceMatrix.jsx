@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import { useAuth } from "../../context/AuthContext";
+
 import DeviceBuildCard from "../devicematrix/DeviceBuildCard";
 import DeviceBuildDetails from "../devicematrix/DeviceBuildDetails";
 import DeviceBuildModal from "../devicematrix/DeviceBuildModal";
@@ -16,6 +18,10 @@ function DeviceMatrix({
   game,
   platform,
 }) {
+
+  const { role } = useAuth();
+  const isDev = role?.toLowerCase() === "dev";
+
   const [selectedBuild, setSelectedBuild] = useState(null);
 
   // Device tests loaded from Firestore

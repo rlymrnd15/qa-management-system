@@ -5,7 +5,7 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   // Temporary role for testing.
   // Change this to "qa" when testing the QA account.
-  const [role, setRole] = useState("qa");
+  const [role, setRole] = useState("dev");
 
   return (
     <AuthContext.Provider value={{ role, setRole }}>

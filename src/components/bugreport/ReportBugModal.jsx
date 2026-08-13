@@ -28,6 +28,7 @@ function ReportBugModal({
     impact: "User Issue",
     steps: "",
     evidenceLink: "",
+     qaComments: "",
     developerComments: "",
   });
 
@@ -47,6 +48,7 @@ function ReportBugModal({
         impact: bug.impact || "User Issue",
         steps: bug.steps || "",
         evidenceLink: bug.evidenceLink || "",
+        qaComments: bug.qaComments || "",
         developerComments: bug.developerComments || "",
       });
     } else {
@@ -60,6 +62,7 @@ function ReportBugModal({
         impact: "User Issue",
         steps: "",
         evidenceLink: "",
+        qaComments: "",
         developerComments: "",
       });
     }
@@ -97,6 +100,10 @@ function ReportBugModal({
       impact: formData.impact,
       steps: formData.steps,
       evidenceLink: formData.evidenceLink,
+
+      qaComments: !isDev
+        ? formData.qaComments
+        : bug?.qaComments || "",
 
       // DEV fields
       priority: isDev
@@ -330,6 +337,38 @@ function ReportBugModal({
             className="mt-2 w-full rounded-xl border p-3"
             placeholder="https://drive.google.com/..."
           />
+        </div>
+
+        {/* QA COMMENTS */}
+        <div className="mt-5">
+
+          <label className="text-sm font-semibold">
+            QA Comments
+          </label>
+
+          <textarea
+            value={formData.qaComments}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                qaComments: e.target.value,
+              })
+            }
+            disabled={isDev}
+            className="mt-2 h-24 w-full rounded-xl border p-3 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+            placeholder={
+              isDev
+                ? "Only the QA team can edit this field."
+                : "Add QA comments..."
+            }
+          />
+
+          {isDev && (
+            <p className="mt-1 text-xs text-slate-500">
+              QA comments can only be changed by the QA team.
+            </p>
+          )}
+
         </div>
 
         {/* DEVELOPER COMMENTS — DEV ONLY */}

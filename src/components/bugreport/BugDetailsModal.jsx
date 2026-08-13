@@ -76,6 +76,19 @@ function BugDetailsModal({
 
         </div>
 
+        {/* QA COMMENTS */}
+          <div className="mt-6">
+
+            <h3 className="mb-2 text-lg font-semibold">
+              QA Comments
+            </h3>
+
+            <div className="whitespace-pre-wrap rounded-xl bg-slate-100 p-4">
+              {bug.qaComments || "No QA comments."}
+            </div>
+
+          </div>
+
         {/* DEV INFORMATION */}
         <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50 p-6">
 
@@ -155,22 +168,22 @@ function BugDetailsModal({
         {/* BUTTONS */}
         <div className="mt-8 flex justify-end gap-3">
 
-          {isDev && (
-            <>
-              <button
-                onClick={() => onDelete(bug)}
-                className="rounded-xl bg-red-600 px-6 py-3 font-semibold text-white hover:bg-red-700"
-              >
-                Delete
-              </button>
+          {/* EDIT BUTTON - QA AND DEV */}
+          <button
+            onClick={() => onEdit(bug)}
+            className="rounded-xl border px-6 py-3 font-semibold hover:bg-slate-100"
+          >
+            Edit
+          </button>
 
-              <button
-                onClick={() => onEdit(bug)}
-                className="rounded-xl border px-6 py-3 font-semibold hover:bg-slate-100"
-              >
-                Edit
-              </button>
-            </>
+          {/* DELETE BUTTON - DEV ONLY */}
+          {isDev && (
+            <button
+              onClick={() => onDelete(bug)}
+              className="rounded-xl bg-red-600 px-6 py-3 font-semibold text-white hover:bg-red-700"
+            >
+              Delete
+            </button>
           )}
 
           <button
