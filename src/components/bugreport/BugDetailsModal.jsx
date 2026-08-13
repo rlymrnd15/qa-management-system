@@ -5,16 +5,16 @@ function BugDetailsModal({
   onClose,
   onEdit,
   onDelete,
+  isDev,
 }) {
-
   if (!bug) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
 
       <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-8">
 
-        {/* Header */}
+        {/* HEADER */}
         <div className="mb-8 flex items-center justify-between">
 
           <div>
@@ -27,40 +27,104 @@ function BugDetailsModal({
             </p>
           </div>
 
-          <button onClick={onClose}>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-2 hover:bg-slate-100"
+          >
             <X />
           </button>
 
         </div>
 
-        {/* Information */}
+        {/* QA INFORMATION */}
         <div className="grid gap-5 md:grid-cols-2">
 
-          <Info label="Priority" value={bug.priority} />
-          <Info label="Status" value={bug.status} />
-          <Info label="Impact" value={bug.impact} />
-          <Info label="Device" value={bug.device} />
-          <Info label="OS Version" value={bug.osVersion || "-"} />
-          <Info label="Game Version" value={bug.version} />
-          <Info label="Reporter" value={bug.reporter} />
-          <Info label="Date Reported" value={bug.date} />
+          <Info
+            label="Impact"
+            value={bug.impact}
+          />
+
+          <Info
+            label="Device"
+            value={bug.device}
+          />
+
+          <Info
+            label="OS Version"
+            value={bug.osVersion}
+          />
+
+          <Info
+            label="Game Version"
+            value={bug.version}
+          />
+
+          <Info
+            label="Reproducible on Live Build"
+            value={bug.reproducibleLive || "Not Tested"}
+          />
+
+          <Info
+            label="Reporter"
+            value={bug.reporter}
+          />
+
+          <Info
+            label="Date Reported"
+            value={bug.date}
+          />
 
         </div>
 
-        {/* Steps */}
+        {/* DEV INFORMATION */}
+        <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50 p-6">
+
+          <h3 className="mb-5 text-xl font-bold">
+            Developer Triage
+          </h3>
+
+          <div className="grid gap-5 md:grid-cols-2">
+
+            <Info
+              label="Priority"
+              value={bug.priority || "Unassigned"}
+            />
+
+            <Info
+              label="Status"
+              value={bug.status || "Open"}
+            />
+
+          </div>
+
+          <div className="mt-5">
+
+            <p className="text-sm font-semibold">
+              Developer Comments
+            </p>
+
+            <div className="mt-2 whitespace-pre-wrap rounded-xl bg-white p-4">
+              {bug.developerComments || "No developer comments."}
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* STEPS */}
         <div className="mt-8">
 
           <h3 className="mb-2 text-lg font-semibold">
             Steps to Reproduce
           </h3>
 
-          <div className="rounded-xl bg-slate-100 p-4 whitespace-pre-wrap">
+          <div className="whitespace-pre-wrap rounded-xl bg-slate-100 p-4">
             {bug.steps || "No steps provided."}
           </div>
 
         </div>
 
-        {/* Evidence Link */}
+        {/* EVIDENCE */}
         <div className="mt-6">
 
           <h3 className="mb-2 text-lg font-semibold">
@@ -88,43 +152,35 @@ function BugDetailsModal({
 
         </div>
 
-        {/* Developer Comments */}
-        <div className="mt-6">
-
-          <h3 className="mb-2 text-lg font-semibold">
-            Developer Comments
-          </h3>
-
-          <div className="rounded-xl bg-slate-100 p-4 whitespace-pre-wrap">
-            {bug.developerComments || "No developer comments."}
-          </div>
-
-        </div>
-
+        {/* BUTTONS */}
         <div className="mt-8 flex justify-end gap-3">
 
-        <button
-          onClick={() => onDelete(bug)}
-          className="rounded-xl bg-red-600 px-6 py-3 font-semibold text-white hover:bg-red-700"
-        >
-          Delete
-        </button>
+          {isDev && (
+            <>
+              <button
+                onClick={() => onDelete(bug)}
+                className="rounded-xl bg-red-600 px-6 py-3 font-semibold text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
 
-        <button
-          onClick={() => onEdit(bug)}
-          className="rounded-xl border px-6 py-3 font-semibold hover:bg-slate-100"
-        >
-          Edit
-        </button>
+              <button
+                onClick={() => onEdit(bug)}
+                className="rounded-xl border px-6 py-3 font-semibold hover:bg-slate-100"
+              >
+                Edit
+              </button>
+            </>
+          )}
 
-        <button
-          onClick={onClose}
-          className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
-        >
-          Close
-        </button>
+          <button
+            onClick={onClose}
+            className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+          >
+            Close
+          </button>
 
-      </div>
+        </div>
 
       </div>
 
@@ -135,13 +191,15 @@ function BugDetailsModal({
 function Info({ label, value }) {
   return (
     <div className="rounded-xl border p-4">
+
       <p className="text-sm text-slate-500">
         {label}
       </p>
 
       <p className="mt-1 font-semibold">
-        {value}
+        {value || "-"}
       </p>
+
     </div>
   );
 }

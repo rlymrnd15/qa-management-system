@@ -1,42 +1,47 @@
 import { useEffect, useState } from "react";
 
+import { useAuth } from "../../context/AuthContext";
+
 import BugStats from "../bugreport/BugStats";
+import BugDetailsModal from "../bugreport/BugDetailsModal";
 import SearchFilters from "../bugreport/SearchFilters";
+
 import BuildsGrid from "../build/BuildsGrid";
 import BuildDetails from "../build/BuildDetails";
-import ReportBugModal from "../bugreport/ReportBugModal";
-import AddBuildModal from "../build/AddBuildModal";
 
 import { formatGameName } from "../../utils/formatGameName";
+import AddBuildModal from "../build/AddBuildModal";
 
 import {
   getBugReports,
-  addBugReport,
 } from "../../services/bugReportService";
 
 import initialBuilds from "../../data/builds";
 
-function BugReports({ game, platform }) {
+function BugReports({
+  game,
+  platform,
+}) {
+  const { role } = useAuth();
+
+  const isDev = role === "dev";
+
   const [bugs, setBugs] = useState([]);
   const [buildList, setBuildList] = useState(initialBuilds);
 
   const [loading, setLoading] = useState(true);
 
-  // IMPORTANT
+  // THIS controls which build is currently open
   const [selectedBuild, setSelectedBuild] = useState(null);
-
-  const [openModal, setOpenModal] = useState(false);
-  const [openBuildModal, setOpenBuildModal] = useState(false);
 
   const [search, setSearch] = useState("");
   const [priority, setPriority] = useState("All");
   const [status, setStatus] = useState("All");
   const [device, setDevice] = useState("All");
 
-  // ==============================
-  // LOAD BUGS
-  // ==============================
+  const [openBuildModal, setOpenBuildModal] = useState(false);
 
+  // Load bugs
   useEffect(() => {
     const loadBugs = async () => {
       try {
@@ -52,29 +57,14 @@ function BugReports({ game, platform }) {
     loadBugs();
   }, []);
 
-  // ==============================
-  // RESET SELECTED BUILD
-  // ONLY WHEN GAME/PLATFORM CHANGES
-  // ==============================
-
-  useEffect(() => {
-    setSelectedBuild(null);
-  }, [game, platform]);
-
-  // ==============================
-  // GAME + PLATFORM BUGS
-  // ==============================
-
+  // Bugs for current game + platform
   const gameBugs = bugs.filter(
     (bug) =>
       bug.game === game &&
       bug.platform === platform
   );
 
-  // ==============================
-  // FILTERS
-  // ==============================
-
+  // Devices
   const devices = [
     "All",
     ...new Set(
@@ -84,89 +74,14 @@ function BugReports({ game, platform }) {
     ),
   ];
 
-  const filteredBugs = gameBugs.filter((bug) => {
-    const matchesSearch = (bug.title || "")
-      .toLowerCase()
-      .includes(search.toLowerCase());
+  // Platform name
+  const platformName = {
+    ios: "iOS",
+    android: "Android",
+    amazon: "Amazon",
+  }[platform] || platform;
 
-    const matchesPriority =
-      priority === "All" ||
-      bug.priority === priority;
-
-    const matchesStatus =
-      status === "All" ||
-      bug.status === status;
-
-    const matchesDevice =
-      device === "All" ||
-      bug.device === device;
-
-    return (
-      matchesSearch &&
-      matchesPriority &&
-      matchesStatus &&
-      matchesDevice
-    );
-  });
-
-  // ==============================
-  // ADD BUILD
-  // ==============================
-
-  const handleAddBuild = (newBuild) => {
-    setBuildList((prevBuilds) => {
-      let updatedBuilds;
-
-      if (newBuild.latest) {
-        updatedBuilds = prevBuilds.map((build) => ({
-          ...build,
-          latest: false,
-        }));
-      } else {
-        updatedBuilds = [...prevBuilds];
-      }
-
-      return [
-        newBuild,
-        ...updatedBuilds,
-      ];
-    });
-
-    setOpenBuildModal(false);
-  };
-
-  // ==============================
-  // ADD BUG
-  // ==============================
-
-  const handleAddBug = async (newBug) => {
-    try {
-      const savedBug = await addBugReport({
-        ...newBug,
-        game,
-        platform,
-      });
-
-      setBugs((prevBugs) => [
-        savedBug,
-        ...prevBugs,
-      ]);
-
-      setOpenModal(false);
-    } catch (error) {
-      console.error(
-        "Error saving bug report:",
-        error
-      );
-
-      alert("Failed to save bug report.");
-    }
-  };
-
-  // ==============================
-  // LOADING
-  // ==============================
-
+  // Loading
   if (loading) {
     return (
       <div className="flex min-h-[300px] items-center justify-center">
@@ -177,10 +92,10 @@ function BugReports({ game, platform }) {
     );
   }
 
-  // ==================================================
-  // ⭐ BUILD DETAILS
-  // THIS MUST COME BEFORE THE BUILD CARDS RETURN
-  // ==================================================
+  // ==========================================
+  // IF A BUILD IS SELECTED
+  // SHOW THAT BUILD'S BUGS
+  // ==========================================
 
   if (selectedBuild) {
     return (
@@ -195,23 +110,14 @@ function BugReports({ game, platform }) {
     );
   }
 
-  // ==============================
-  // NORMAL BUILD CARDS PAGE
-  // ==============================
-
-  const platformName =
-    {
-      ios: "iOS",
-      android: "Android",
-      amazon: "Amazon",
-    }[platform] || platform;
+  // ==========================================
+  // OTHERWISE SHOW BUILD CARDS
+  // ==========================================
 
   return (
     <div>
-
-      {/* HEADER */}
+      {/* Header */}
       <div className="mb-8 flex items-center justify-between">
-
         <div>
           <h1 className="text-3xl font-bold">
             Bug Reports
@@ -222,20 +128,20 @@ function BugReports({ game, platform }) {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setOpenBuildModal(true)}
-          className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
-        >
-          + Add Build
-        </button>
-
+        {isDev && (
+          <button
+            onClick={() => setOpenBuildModal(true)}
+            className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
+          >
+            + Add Build
+          </button>
+        )}
       </div>
 
-      {/* STATS */}
+      {/* Stats */}
       <BugStats bugs={gameBugs} />
 
-      {/* FILTERS */}
+      {/* Filters */}
       <SearchFilters
         search={search}
         setSearch={setSearch}
@@ -248,33 +154,34 @@ function BugReports({ game, platform }) {
         devices={devices}
       />
 
-      {/* BUILD CARDS */}
+      {/* Build Cards */}
       <BuildsGrid
         builds={buildList}
         bugs={gameBugs}
         onSelectBuild={(build) => {
-          console.log("CLICKED BUILD:", build);
-
+          console.log("Selected build:", build);
           setSelectedBuild(build);
         }}
       />
 
-      {/* REPORT BUG */}
-      <ReportBugModal
-        isOpen={openModal}
-        game={game}
-        platform={platform}
-        onClose={() => setOpenModal(false)}
-        onSubmit={handleAddBug}
-      />
-
-      {/* ADD BUILD */}
       <AddBuildModal
         isOpen={openBuildModal}
         onClose={() => setOpenBuildModal(false)}
-        onSubmit={handleAddBuild}
-      />
+        onSubmit={(newBuild) => {
+          setBuildList((prevBuilds) => {
+            const updatedBuilds = newBuild.latest
+              ? prevBuilds.map((build) => ({
+                  ...build,
+                  latest: false,
+                }))
+              : prevBuilds;
 
+            return [newBuild, ...updatedBuilds];
+          });
+
+          setOpenBuildModal(false);
+        }}
+      />
     </div>
   );
 }

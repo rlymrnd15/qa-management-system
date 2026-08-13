@@ -1,225 +1,313 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import ReportBugModal from "../bugreport/ReportBugModal";
-import BugStats from "../bugreport/BugStats";
+import BugTable from "../bugreport/BugTable";
 import BugDetailsModal from "../bugreport/BugDetailsModal";
-import SearchFilters from "../bugreport/SearchFilters";
-
-import BuildsGrid from "../build/BuildsGrid";
-import BuildDetails from "../build/BuildDetails";
-
-import { formatGameName } from "../../utils/formatGameName";
+import ReportBugModal from "../bugreport/ReportBugModal";
+import { useAuth } from "../../context/AuthContext";
 
 import {
-  getBugReports,
+  addBugReport,
+  updateBugReport,
+  deleteBugReport,
 } from "../../services/bugReportService";
 
-import initialBuilds from "../../data/builds";
-
-function BugReports({
+function BuildDetails({
+  build,
+  bugs,
+  setBugs,
+  onBack,
   game,
   platform,
 }) {
-  const [bugs, setBugs] = useState([]);
-  const [buildList, setBuildList] = useState(initialBuilds);
 
-  const [loading, setLoading] = useState(true);
+  const { role } = useAuth();
+  const isDev = role?.toLowerCase() === "dev";
 
   const [selectedBug, setSelectedBug] = useState(null);
-
-  const [selectedBuild, setSelectedBuild] = useState(null);
-
   const [openModal, setOpenModal] = useState(false);
+  const [editingBug, setEditingBug] = useState(null);
 
-  const [search, setSearch] = useState("");
-  const [priority, setPriority] = useState("All");
-  const [status, setStatus] = useState("All");
-  const [device, setDevice] = useState("All");
+  console.log("BUILD DETAILS RECEIVED:", build);
+  console.log("ALL BUGS:", bugs);
+  console.log("GAME:", game);
+  console.log("PLATFORM:", platform);
 
-  // ==============================
-  // LOAD BUGS FROM FIRESTORE
-  // ==============================
-
-  useEffect(() => {
-    const loadBugs = async () => {
-      try {
-        const data = await getBugReports();
-
-        setBugs(data);
-      } catch (error) {
-        console.error(
-          "Error loading bug reports:",
-          error
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadBugs();
-  }, []);
-
-  // ==============================
-  // ONLY CURRENT GAME + PLATFORM
-  // ==============================
-
-  const gameBugs = bugs.filter(
+  // Bugs belonging ONLY to this build
+  const buildBugs = bugs.filter(
     (bug) =>
+      String(bug.build) === String(build.version) &&
       bug.game === game &&
       bug.platform === platform
   );
 
-  // ==============================
-  // SEARCH + FILTERS
-  // ==============================
+  console.log("BUGS FOR THIS BUILD:", buildBugs);
 
-  const filteredBugs = gameBugs.filter((bug) => {
-    const matchesSearch = (bug.title || "")
-      .toLowerCase()
-      .includes(search.toLowerCase());
+  const totalBugs = buildBugs.length;
 
-    const matchesPriority =
-      priority === "All" ||
-      bug.priority === priority;
+  const closed = buildBugs.filter(
+    (bug) => bug.status === "Closed"
+  ).length;
 
-    const matchesStatus =
-      status === "All" ||
-      bug.status === status;
+  const pending = buildBugs.filter(
+    (bug) => bug.status === "Pending"
+  ).length;
 
-    const matchesDevice =
-      device === "All" ||
-      bug.device === device;
+  const open = buildBugs.filter(
+    (bug) => bug.status === "Open"
+  ).length;
 
-    return (
-      matchesSearch &&
-      matchesPriority &&
-      matchesStatus &&
-      matchesDevice
+  const handleSubmit = async (newBug) => {
+    try {
+
+      console.log("HANDLE SUBMIT:", newBug);
+  console.log("EDITING BUG AT SUBMIT:", editingBug);
+  
+      if (editingBug) {
+        const updatedBug = await updateBugReport(
+          editingBug.id,
+          newBug
+        );
+
+        setBugs((prev) =>
+          prev.map((bug) =>
+            bug.id === editingBug.id
+              ? updatedBug
+              : bug
+          )
+        );
+      } else {
+        const savedBug = await addBugReport({
+          ...newBug,
+          game,
+          platform,
+          build: build.version,
+        });
+
+        setBugs((prev) => [
+          savedBug,
+          ...prev,
+        ]);
+      }
+
+      setOpenModal(false);
+      setEditingBug(null);
+    } catch (error) {
+      console.error("Error saving bug:", error);
+      alert("Failed to save bug report.");
+    }
+  };
+const handleUpdateDeveloperChanges = async (updatedBug) => {
+  try {
+    const savedBug = await updateBugReport(
+      updatedBug.id,
+      updatedBug
     );
-  });
 
-  // ==============================
-  // DEVICE FILTER OPTIONS
-  // ==============================
-
-  const devices = [
-    "All",
-    ...new Set(
-      gameBugs
-        .map((bug) => bug.device)
-        .filter(Boolean)
-    ),
-  ];
-
-  // ==============================
-  // PLATFORM NAME
-  // ==============================
-
-  const platformName = {
-    ios: "iOS",
-    android: "Android",
-    amazon: "Amazon",
-  }[platform] || platform;
-
-  // ==============================
-  // LOADING
-  // ==============================
-
-  if (loading) {
-    return (
-      <div className="flex min-h-[300px] items-center justify-center">
-        <p className="text-slate-500">
-          Loading bug reports...
-        </p>
-      </div>
+    setBugs((prev) =>
+      prev.map((bug) =>
+        bug.id === savedBug.id
+          ? savedBug
+          : bug
+      )
     );
+
+    setSelectedBug(savedBug);
+
+  } catch (error) {
+    console.error(
+      "Error updating developer changes:",
+      error
+    );
+
+    alert("Failed to update developer changes.");
   }
+};
 
-  // ==============================
-  // BUILD DETAILS PAGE
-  // ==============================
-
-  if (selectedBuild) {
-    return (
-      <BuildDetails
-        build={selectedBuild}
-        bugs={bugs}
-        setBugs={setBugs}
-        game={game}
-        platform={platform}
-        onBack={() => setSelectedBuild(null)}
-      />
+  const handleDelete = async (bug) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${bug.title}"?`
     );
-  }
 
-  // ==============================
-  // BUILD CARDS PAGE
-  // ==============================
+    if (!confirmed) return;
+
+    try {
+      await deleteBugReport(bug.id);
+
+      setBugs((prev) =>
+        prev.filter((item) => item.id !== bug.id)
+      );
+
+      setSelectedBug(null);
+    } catch (error) {
+      console.error("Error deleting bug:", error);
+      alert("Failed to delete bug report.");
+    }
+  };
 
   return (
     <div>
 
+      {/* BACK */}
+      <button
+        onClick={onBack}
+        className="
+          mb-8
+          rounded-xl
+          border
+          border-slate-200
+          bg-white
+          px-5
+          py-3
+          font-medium
+          shadow-sm
+          hover:bg-slate-100
+        "
+      >
+        ← Back to Builds
+      </button>
+
       {/* HEADER */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="flex items-start justify-between">
 
         <div>
-          <h1 className="text-3xl font-bold">
-            Bug Reports
+          <h1 className="text-4xl font-bold">
+            Build v{build.version}
           </h1>
 
           <p className="mt-2 text-slate-500">
-            {formatGameName(game)} • {platformName}
+            Released {build.releaseDate}
           </p>
         </div>
+
+        <button
+          onClick={() => {
+            setEditingBug(null);
+            setOpenModal(true);
+          }}
+          className="
+            rounded-xl
+            bg-blue-600
+            px-5
+            py-3
+            font-semibold
+            text-white
+            hover:bg-blue-700
+          "
+        >
+          + Report Bug
+        </button>
 
       </div>
 
       {/* STATS */}
-      <BugStats bugs={gameBugs} />
+      <div className="mt-8 grid grid-cols-4 gap-4">
 
-      {/* SEARCH + FILTERS */}
-      <SearchFilters
-        search={search}
-        setSearch={setSearch}
-        priority={priority}
-        setPriority={setPriority}
-        status={status}
-        setStatus={setStatus}
-        device={device}
-        setDevice={setDevice}
-        devices={devices}
-      />
+        <div className="rounded-2xl bg-slate-100 p-5">
+          <p className="text-sm text-slate-500">
+            Total Bugs
+          </p>
 
-      {/* BUILD CARDS */}
-      <BuildsGrid
-        builds={buildList}
-        bugs={gameBugs}
-        onSelectBuild={setSelectedBuild}
-      />
+          <h2 className="mt-2 text-3xl font-bold">
+            {totalBugs}
+          </h2>
+        </div>
+
+        <div className="rounded-2xl bg-green-50 p-5">
+         <p className="text-sm text-green-700">
+            Closed
+          </p>
+
+          <h2 className="mt-2 text-3xl font-bold">
+            {closed}
+          </h2>
+        </div>
+
+        <div className="rounded-2xl bg-yellow-50 p-5">
+          <p className="text-sm text-yellow-700">
+            Pending
+          </p>
+
+          <h2 className="mt-2 text-3xl font-bold">
+            {pending}
+          </h2>
+        </div>
+
+        <div className="rounded-2xl bg-red-50 p-5">
+          <p className="text-sm text-red-700">
+            Open
+          </p>
+
+          <h2 className="mt-2 text-3xl font-bold">
+            {open}
+          </h2>
+        </div>
+
+      </div>
+
+      {/* BUG LIST */}
+      <div className="mt-10">
+
+        <h2 className="mb-4 text-2xl font-bold">
+          Bugs ({buildBugs.length})
+        </h2>
+
+        {buildBugs.length === 0 ? (
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
+
+            <p className="font-semibold text-slate-700">
+              No bugs found for this build.
+            </p>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Click "+ Report Bug" to add a bug to Build v{build.version}.
+            </p>
+
+          </div>
+
+        ) : (
+
+          <BugTable
+            bugs={buildBugs}
+            onViewBug={(bug) => {
+              setSelectedBug(bug);
+            }}
+          />
+
+        )}
+
+      </div>
 
       {/* BUG DETAILS */}
       <BugDetailsModal
         bug={selectedBug}
-        onClose={() =>
-          setSelectedBug(null)
-        }
+        onClose={() => setSelectedBug(null)}
+        isDev={isDev}
+        onUpdate={handleUpdateDeveloperChanges}
+        onEdit={(bug) => {
+          setSelectedBug(null);
+          setEditingBug(bug);
+          setOpenModal(true);
+        }}
+        onDelete={handleDelete}
       />
 
-      {/* REPORT BUG MODAL */}
+      {/* REPORT BUG */}
       <ReportBugModal
         isOpen={openModal}
+        bug={editingBug}
+        build={build}
         game={game}
         platform={platform}
-        onClose={() =>
-          setOpenModal(false)
-        }
-        onSubmit={() =>
-          setOpenModal(false)
-        }
+        onClose={() => {
+          setOpenModal(false);
+          setEditingBug(null);
+        }}
+        onSubmit={handleSubmit}
       />
 
     </div>
   );
 }
 
-export default BugReports;
+export default BuildDetails;

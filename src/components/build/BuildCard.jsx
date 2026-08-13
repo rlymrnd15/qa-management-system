@@ -8,11 +8,7 @@ import {
   Clock3,
 } from "lucide-react";
 
-function BuildCard({
-  build,
-  bugs,
-  onClick,
-}) {
+function BuildCard({ build, bugs, onClick }) {
   const buildBugs = bugs.filter(
     (bug) => bug.build === build.version
   );
@@ -41,19 +37,12 @@ function BuildCard({
 
       {/* Header */}
       <div className="flex items-start justify-between">
-
         <div className="flex items-center gap-3">
 
           {build.latest ? (
-            <Rocket
-              className="text-blue-600"
-              size={26}
-            />
+            <Rocket className="text-blue-600" size={26} />
           ) : (
-            <Package
-              className="text-slate-500"
-              size={26}
-            />
+            <Package className="text-slate-500" size={26} />
           )}
 
           <div>
@@ -65,7 +54,6 @@ function BuildCard({
               Released {build.releaseDate}
             </p>
           </div>
-
         </div>
 
         {build.latest && (
@@ -73,19 +61,14 @@ function BuildCard({
             Latest
           </span>
         )}
-
       </div>
 
-      {/* Divider */}
       <div className="my-6 h-px bg-slate-200" />
 
       {/* Total Bugs */}
       <div>
         <div className="flex items-center gap-2">
-          <Bug
-            className="text-red-500"
-            size={20}
-          />
+          <Bug className="text-red-500" size={20} />
 
           <p className="text-sm font-medium text-slate-500">
             Total Bugs
@@ -99,9 +82,7 @@ function BuildCard({
 
       {/* Progress */}
       <div className="mt-6">
-
         <div className="mb-2 flex justify-between">
-
           <p className="text-sm font-medium text-slate-500">
             Resolution Progress
           </p>
@@ -109,20 +90,16 @@ function BuildCard({
           <p className="text-sm font-semibold text-blue-600">
             {fixedPercentage}% Fixed
           </p>
-
         </div>
 
         <div className="h-3 overflow-hidden rounded-full bg-slate-200">
-
           <div
             className="h-full rounded-full bg-blue-600 transition-all"
             style={{
               width: `${fixedPercentage}%`,
             }}
           />
-
         </div>
-
       </div>
 
       {/* Status */}
@@ -175,21 +152,14 @@ function BuildCard({
 
       </div>
 
-      {/* View Bugs */}
+      {/* VIEW BUGS */}
       <button
         type="button"
-        onClick={onClick}
-        className="
-          mt-8
-          w-full
-          rounded-xl
-          bg-blue-600
-          py-3
-          font-semibold
-          text-white
-          transition
-          hover:bg-blue-700
-        "
+        onClick={() => {
+          console.log("VIEW BUGS CLICKED:", build);
+          onClick(build);
+        }}
+        className="mt-8 w-full rounded-xl bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700"
       >
         <div className="flex items-center justify-center gap-2">
           View Bugs

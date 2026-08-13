@@ -217,15 +217,14 @@ function DeviceMatrix({
           </p>
         </div>
 
-        <button
-          onClick={() => {
-            setEditingBuild(null);
-            setBuildModalOpen(true);
-          }}
-          className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
-        >
-          + Add Build
-        </button>
+        {isDev && (
+          <button
+            onClick={() => setOpenBuildModal(true)}
+            className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
+          >
+            + Add Build
+          </button>
+        )}
 
       </div>
 
