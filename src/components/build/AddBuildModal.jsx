@@ -6,6 +6,8 @@ function AddBuildModal({
   onClose,
   onSubmit,
   build = null,
+  game = null,
+  platform = null,
 }) {
   const [formData, setFormData] = useState({
     version: "",
@@ -43,10 +45,12 @@ function AddBuildModal({
     }
 
     const newBuild = {
-      id: build?.id || Date.now(),
-      version: formData.version.trim(),
-      releaseDate: formData.releaseDate.trim(),
-      latest: formData.latest,
+        id: build?.id || Date.now(),
+        version: formData.version.trim(),
+        releaseDate: formData.releaseDate.trim(),
+        latest: formData.latest,
+        game,
+        platform,
     };
 
     onSubmit(newBuild);

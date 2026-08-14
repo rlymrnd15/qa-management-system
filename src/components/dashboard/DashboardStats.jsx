@@ -17,7 +17,7 @@ function DashboardStats({
   ).length;
 
   const fixed = bugs.filter(
-    (bug) => bug.status === "Fixed"
+    (bug) => bug.status === "Closed"
   ).length;
 
   return (
@@ -37,7 +37,7 @@ function DashboardStats({
 
       <Card
         icon={<CircleCheck />}
-        title="Fixed Bugs"
+        title="Closed Bugs"
         value={fixed}
       />
 

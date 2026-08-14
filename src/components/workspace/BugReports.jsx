@@ -12,11 +12,11 @@ import BuildDetails from "../build/BuildDetails";
 import { formatGameName } from "../../utils/formatGameName";
 import AddBuildModal from "../build/AddBuildModal";
 
+import { getBugReports } from "../../services/bugReportService";
 import {
-  getBugReports,
-} from "../../services/bugReportService";
-
-import initialBuilds from "../../data/builds";
+  getBuilds,
+  addBuild,
+} from "../../services/buildService";
 
 function BugReports({
   game,
@@ -27,7 +27,7 @@ function BugReports({
   const isDev = role === "dev";
 
   const [bugs, setBugs] = useState([]);
-  const [buildList, setBuildList] = useState(initialBuilds);
+  const [buildList, setBuildList] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
@@ -43,18 +43,28 @@ function BugReports({
 
   // Load bugs
   useEffect(() => {
-    const loadBugs = async () => {
+    const loadData = async () => {
       try {
-        const data = await getBugReports();
-        setBugs(data);
+        const [bugData, buildData] = await Promise.all([
+          getBugReports(),
+          getBuilds(),
+        ]);
+
+        console.log("BUGS:", bugData);
+console.log("BUILDS:", buildData);
+console.log("CURRENT GAME:", game);
+console.log("CURRENT PLATFORM:", platform);
+
+        setBugs(bugData);
+        setBuildList(buildData);
       } catch (error) {
-        console.error("Error loading bug reports:", error);
+        console.error("Error loading bug reports/builds:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadBugs();
+    loadData();
   }, []);
 
   // Bugs for current game + platform
@@ -63,6 +73,13 @@ function BugReports({
       bug.game === game &&
       bug.platform === platform
   );
+
+  const gameBuilds = buildList.filter(
+    (build) =>
+      build.game === game &&
+      build.platform === platform
+  );
+  
 
   // Devices
   const devices = [
@@ -156,7 +173,7 @@ function BugReports({
 
       {/* Build Cards */}
       <BuildsGrid
-        builds={buildList}
+        builds={gameBuilds}
         bugs={gameBugs}
         onSelectBuild={(build) => {
           console.log("Selected build:", build);
@@ -167,19 +184,33 @@ function BugReports({
       <AddBuildModal
         isOpen={openBuildModal}
         onClose={() => setOpenBuildModal(false)}
-        onSubmit={(newBuild) => {
-          setBuildList((prevBuilds) => {
-            const updatedBuilds = newBuild.latest
-              ? prevBuilds.map((build) => ({
-                  ...build,
-                  latest: false,
-                }))
-              : prevBuilds;
+        game={game}
+        platform={platform}
+        onSubmit={async (newBuild) => {
+          try {
+            const savedBuild = await addBuild({
+              ...newBuild,
+              game,
+              platform,
+            });
 
-            return [newBuild, ...updatedBuilds];
-          });
+            setBuildList((prevBuilds) => {
+              const updatedBuilds = savedBuild.latest
+                ? prevBuilds.map((build) => ({
+                    ...build,
+                    latest: false,
+                  }))
+                : prevBuilds;
 
-          setOpenBuildModal(false);
+              return [savedBuild, ...updatedBuilds];
+            });
+
+            setOpenBuildModal(false);
+
+          } catch (error) {
+            console.error("Error saving build:", error);
+            alert("Failed to save build.");
+          }
         }}
       />
     </div>
