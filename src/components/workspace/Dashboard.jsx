@@ -7,10 +7,19 @@ import RecentBugs from "../dashboard/RecentBugs";
 import { getBugReports } from "../../services/bugReportService";
 import { getBuilds } from "../../services/buildService";
 
-function Dashboard() {
+import { formatGameName } from "../../utils/formatGameName";
+
+function Dashboard({
+  game,
+  platform,
+}) {
   const [bugs, setBugs] = useState([]);
   const [builds, setBuilds] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // ==========================================
+  // LOAD DASHBOARD DATA
+  // ==========================================
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -23,7 +32,10 @@ function Dashboard() {
         setBugs(bugData);
         setBuilds(buildData);
       } catch (error) {
-        console.error("Error loading dashboard data:", error);
+        console.error(
+          "Error loading dashboard data:",
+          error
+        );
       } finally {
         setLoading(false);
       }
@@ -31,6 +43,36 @@ function Dashboard() {
 
     loadDashboardData();
   }, []);
+
+  // ==========================================
+  // FILTER BY CURRENT GAME + PLATFORM
+  // ==========================================
+
+  const gameBugs = bugs.filter(
+    (bug) =>
+      bug.game === game &&
+      bug.platform === platform
+  );
+
+  const gameBuilds = builds.filter(
+    (build) =>
+      build.game === game &&
+      build.platform === platform
+  );
+
+  // ==========================================
+  // PLATFORM NAME
+  // ==========================================
+
+  const platformName = {
+    ios: "iOS",
+    android: "Android",
+    amazon: "Amazon",
+  }[platform] || platform;
+
+  // ==========================================
+  // LOADING
+  // ==========================================
 
   if (loading) {
     return (
@@ -42,32 +84,51 @@ function Dashboard() {
     );
   }
 
+  // ==========================================
+  // DEBUG
+  // ==========================================
+
+  console.log("DASHBOARD GAME:", game);
+  console.log("DASHBOARD PLATFORM:", platform);
+  console.log("DASHBOARD BUGS:", gameBugs);
+  console.log("DASHBOARD BUILDS:", gameBuilds);
+
+  // ==========================================
+  // DASHBOARD
+  // ==========================================
+
   return (
     <div>
 
       {/* Header */}
       <div className="mb-8">
+
         <h1 className="text-4xl font-bold">
           QA Dashboard
         </h1>
 
         <p className="mt-2 text-slate-500">
-          Overview of builds and bug reports
+          {formatGameName(game)} • {platformName}
         </p>
+
       </div>
 
       {/* Stats */}
       <DashboardStats
-        builds={builds}
-        bugs={bugs}
+        builds={gameBuilds}
+        bugs={gameBugs}
       />
 
       {/* Charts / Recent Bugs */}
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
 
-        <PriorityChart bugs={bugs} />
+        <PriorityChart
+          bugs={gameBugs}
+        />
 
-        <RecentBugs bugs={bugs} />
+        <RecentBugs
+          bugs={gameBugs}
+        />
 
       </div>
 

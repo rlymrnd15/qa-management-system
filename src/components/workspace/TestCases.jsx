@@ -15,12 +15,10 @@ import {
   deleteTestCase,
 } from "../../services/testCaseService";
 
-
 function TestCases({
   game,
   platform,
 }) {
-  
   const [search, setSearch] = useState("");
   const [priority, setPriority] = useState("All");
   const [status, setStatus] = useState("All");
@@ -32,6 +30,10 @@ function TestCases({
 
   const [testCaseList, setTestCaseList] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // ==========================================
+  // LOAD TEST CASES
+  // ==========================================
 
   useEffect(() => {
     const loadTestCases = async () => {
@@ -49,12 +51,32 @@ function TestCases({
     loadTestCases();
   }, []);
 
+  // ==========================================
+  // TEST CASES FOR CURRENT GAME + PLATFORM
+  // ==========================================
+
+  const gamePlatformTestCases = testCaseList.filter(
+    (testCase) =>
+      testCase.game === game &&
+      testCase.platform === platform
+  );
+
+  // ==========================================
+  // PLATFORMS
+  // ==========================================
+
   const platforms = [
     "All",
-    ...new Set(testCaseList.map((testCase) => testCase.platform)),
+    ...new Set(
+      gamePlatformTestCases
+        .map((testCase) => testCase.platform)
+        .filter(Boolean)
+    ),
   ];
-  
-  console.log(platforms);
+
+  // ==========================================
+  // PLATFORM NAME
+  // ==========================================
 
   const platformName = {
     ios: "iOS",
@@ -62,31 +84,41 @@ function TestCases({
     amazon: "Amazon",
   }[platform] || platform;
 
-  const filteredTestCases = testCaseList.filter((testCase) => {
-    const matchesSearch =
-      testCase.title
-        .toLowerCase()
-        .includes(search.toLowerCase());
+  // ==========================================
+  // FILTER TEST CASES
+  // ==========================================
 
-    const matchesPriority =
-      priority === "All" ||
-      testCase.priority === priority;
+  const filteredTestCases = gamePlatformTestCases.filter(
+    (testCase) => {
+      const matchesSearch =
+        (testCase.title || "")
+          .toLowerCase()
+          .includes(search.toLowerCase());
 
-    const matchesStatus =
-      status === "All" ||
-      testCase.status === status;
+      const matchesPriority =
+        priority === "All" ||
+        testCase.priority === priority;
 
-    const matchesPlatform =
-      selectedPlatform === "All" ||
-      testCase.platform === selectedPlatform;
+      const matchesStatus =
+        status === "All" ||
+        testCase.status === status;
 
-    return (
-      matchesSearch &&
-      matchesPriority &&
-      matchesStatus &&
-      matchesPlatform
-    );
-  });
+      const matchesPlatform =
+        selectedPlatform === "All" ||
+        testCase.platform === selectedPlatform;
+
+      return (
+        matchesSearch &&
+        matchesPriority &&
+        matchesStatus &&
+        matchesPlatform
+      );
+    }
+  );
+
+  // ==========================================
+  // LOADING
+  // ==========================================
 
   if (loading) {
     return (
@@ -97,7 +129,11 @@ function TestCases({
       </div>
     );
   }
-  
+
+  // ==========================================
+  // RENDER
+  // ==========================================
+
   return (
     <div>
 
@@ -131,8 +167,12 @@ function TestCases({
 
       </div>
 
-      <TestCaseStats testCases={filteredTestCases} />
+      {/* Stats */}
+      <TestCaseStats
+        testCases={filteredTestCases}
+      />
 
+      {/* Filters */}
       <SearchFilters
         search={search}
         setSearch={setSearch}
@@ -145,6 +185,7 @@ function TestCases({
         platforms={platforms}
       />
 
+      {/* Test Case Table */}
       <TestCaseTable
         testCases={filteredTestCases}
         onViewTestCase={(testCase) => {
@@ -152,44 +193,78 @@ function TestCases({
         }}
       />
 
+      {/* Details Modal */}
       <TestCaseDetailsModal
         testCase={selectedTestCase}
+
         onClose={() => {
           setSelectedTestCase(null);
         }}
+
         onEdit={(testCase) => {
           setEditingTestCase(testCase);
           setOpenModal(true);
           setSelectedTestCase(null);
         }}
-        onDelete={(testCase) => {
-          setTestCaseList((prev) =>
-            prev.filter((item) => item.id !== testCase.id)
-          );
 
-          setSelectedTestCase(null);
+        onDelete={async (testCase) => {
+          try {
+            await deleteTestCase(testCase.id);
+
+            setTestCaseList((prev) =>
+              prev.filter(
+                (item) => item.id !== testCase.id
+              )
+            );
+
+            setSelectedTestCase(null);
+          } catch (error) {
+            console.error(
+              "Error deleting test case:",
+              error
+            );
+
+            alert("Failed to delete test case.");
+          }
         }}
       />
 
+      {/* Add / Edit Modal */}
       <ReportTestCaseModal
         isOpen={openModal}
+
         onClose={() => {
           console.log("Closing modal...");
+
           setOpenModal(false);
           setEditingTestCase(null);
         }}
+
         testCase={editingTestCase}
-        build={{ version: "2.5.2" }} // temporary
+
+        build={{ version: "2.5.2" }}
+
         game={game}
         platform={platform}
 
         onSubmit={async (newTestCase) => {
           try {
+
+            // ==========================================
+            // EDIT
+            // ==========================================
+
             if (editingTestCase) {
-              const updatedTestCase = await updateTestCase(
-                editingTestCase.id,
-                newTestCase
-              );
+
+              const updatedTestCase =
+                await updateTestCase(
+                  editingTestCase.id,
+                  {
+                    ...newTestCase,
+                    game,
+                    platform,
+                  }
+                );
 
               setTestCaseList((prev) =>
                 prev.map((item) =>
@@ -198,24 +273,40 @@ function TestCases({
                     : item
                 )
               );
-            } else {
-              const savedTestCase = await addTestCase({
-                ...newTestCase,
-                game,
-                platform,
-                build: "2.5.2",
-              });
+
+            }
+
+            // ==========================================
+            // ADD
+            // ==========================================
+
+            else {
+
+              const savedTestCase =
+                await addTestCase({
+                  ...newTestCase,
+                  game,
+                  platform,
+                  build: "2.5.2",
+                });
 
               setTestCaseList((prev) => [
                 savedTestCase,
                 ...prev,
               ]);
+
             }
 
             setEditingTestCase(null);
             setOpenModal(false);
+
           } catch (error) {
-            console.error("Error saving test case:", error);
+
+            console.error(
+              "Error saving test case:",
+              error
+            );
+
             alert("Failed to save test case.");
           }
         }}

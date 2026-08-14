@@ -13,6 +13,7 @@ import { formatGameName } from "../../utils/formatGameName";
 import AddBuildModal from "../build/AddBuildModal";
 
 import { getBugReports } from "../../services/bugReportService";
+
 import {
   getBuilds,
   addBuild,
@@ -51,7 +52,16 @@ function BugReports({
         ]);
 
         console.log("BUGS:", bugData);
-console.log("BUILDS:", buildData);
+console.log("BUILDS FROM FIRESTORE:", buildData);
+
+buildData.forEach((build) => {
+  console.log("BUILD:", {
+    id: build.id,
+    version: build.version,
+    game: build.game,
+    platform: build.platform,
+  });
+});
 console.log("CURRENT GAME:", game);
 console.log("CURRENT PLATFORM:", platform);
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import DeviceStats from "./DeviceStats";
 import DeviceSearchFilters from "./DeviceSearchFilters";
@@ -20,14 +20,7 @@ function DeviceBuildDetails({
   deviceTests,
   setDeviceTests,
 }) {
-  const buildDevices = deviceTests.filter(
-    (device) =>
-      device.build === build.version &&
-      device.game === game &&
-      device.platform === platform
-  );
-
-  const [deviceList, setDeviceList] = useState(buildDevices);
+  const [deviceList, setDeviceList] = useState([]);
 
   const [search, setSearch] = useState("");
 
@@ -37,9 +30,55 @@ function DeviceBuildDetails({
 
   const [openModal, setOpenModal] = useState(false);
 
-  const filteredDevices = deviceList.filter((device) =>
-    device.device.toLowerCase().includes(search.toLowerCase())
-  );
+  // ==========================================
+  // GET DEVICES FOR CURRENT BUILD
+  // ==========================================
+
+  useEffect(() => {
+    const buildDevices = deviceTests.filter(
+      (device) =>
+        device.build === build.version &&
+        device.game === game &&
+        device.platform === platform
+    );
+
+    setDeviceList(buildDevices);
+  }, [
+    deviceTests,
+    build.version,
+    game,
+    platform,
+  ]);
+
+  // ==========================================
+  // SEARCH DEVICES
+  // ==========================================
+
+  const filteredDevices = deviceList.filter((device) => {
+    const searchValue = search.trim().toLowerCase();
+
+    if (!searchValue) {
+      return true;
+    }
+
+    return (
+      String(device.device || "")
+        .toLowerCase()
+        .includes(searchValue) ||
+
+      String(device.osVersion || "")
+        .toLowerCase()
+        .includes(searchValue) ||
+
+      String(device.build || "")
+        .toLowerCase()
+        .includes(searchValue)
+    );
+  });
+
+  // ==========================================
+  // DELETE DEVICE
+  // ==========================================
 
   const handleDelete = async (device) => {
     const confirmed = window.confirm(
@@ -49,38 +88,48 @@ function DeviceBuildDetails({
     if (!confirmed) return;
 
     try {
-      // Delete from Firestore
       await deleteDeviceTest(device.id);
 
-      // Update current build
       setDeviceList((prev) =>
-        prev.filter((item) => item.id !== device.id)
+        prev.filter(
+          (item) => item.id !== device.id
+        )
       );
 
-      // Update shared data
       setDeviceTests((prev) =>
-        prev.filter((item) => item.id !== device.id)
+        prev.filter(
+          (item) => item.id !== device.id
+        )
       );
 
       setSelectedDevice(null);
 
     } catch (error) {
-      console.error("Error deleting device test:", error);
+      console.error(
+        "Error deleting device test:",
+        error
+      );
+
       alert("Failed to delete device test.");
     }
   };
+
+  // ==========================================
+  // ADD / EDIT DEVICE
+  // ==========================================
 
   const handleSubmit = async (newDevice) => {
     try {
       if (editingDevice) {
 
-        // Update Firestore
-        const updatedDevice = await updateDeviceTest(
-          editingDevice.id,
-          newDevice
-        );
+        // UPDATE FIRESTORE
+        const updatedDevice =
+          await updateDeviceTest(
+            editingDevice.id,
+            newDevice
+          );
 
-        // Update current build
+        // UPDATE CURRENT BUILD
         setDeviceList((prev) =>
           prev.map((item) =>
             item.id === editingDevice.id
@@ -89,7 +138,7 @@ function DeviceBuildDetails({
           )
         );
 
-        // Update shared data
+        // UPDATE SHARED DEVICE DATA
         setDeviceTests((prev) =>
           prev.map((item) =>
             item.id === editingDevice.id
@@ -100,16 +149,17 @@ function DeviceBuildDetails({
 
       } else {
 
-        // Add to Firestore
-        const addedDevice = await addDeviceTest(newDevice);
+        // ADD TO FIRESTORE
+        const addedDevice =
+          await addDeviceTest(newDevice);
 
-        // Add to current build
+        // ADD TO CURRENT BUILD
         setDeviceList((prev) => [
           addedDevice,
           ...prev,
         ]);
 
-        // Add to shared data
+        // ADD TO SHARED DATA
         setDeviceTests((prev) => [
           addedDevice,
           ...prev,
@@ -120,7 +170,11 @@ function DeviceBuildDetails({
       setOpenModal(false);
 
     } catch (error) {
-      console.error("Error saving device test:", error);
+      console.error(
+        "Error saving device test:",
+        error
+      );
+
       alert("Failed to save device test.");
     }
   };
@@ -161,7 +215,9 @@ function DeviceBuildDetails({
       </button>
 
       {/* Device Stats */}
-      <DeviceStats deviceList={deviceList} />
+      <DeviceStats
+        deviceList={deviceList}
+      />
 
       {/* Search */}
       <DeviceSearchFilters
@@ -194,18 +250,14 @@ function DeviceBuildDetails({
       {/* Add / Edit Device */}
       <DeviceTestModal
         isOpen={openModal}
-
         build={build}
         game={game}
         platform={platform}
-
         device={editingDevice}
-
         onClose={() => {
           setOpenModal(false);
           setEditingDevice(null);
         }}
-
         onSubmit={handleSubmit}
       />
 
