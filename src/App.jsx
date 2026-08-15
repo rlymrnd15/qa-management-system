@@ -1,4 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 import Projects from "./pages/Projects";
 import Workspace from "./pages/Workspace";
@@ -16,7 +21,7 @@ function App() {
           element={<Login />}
         />
 
-        {/* Protected Projects */}
+        {/* Projects */}
         <Route
           path="/"
           element={
@@ -26,9 +31,19 @@ function App() {
           }
         />
 
-        {/* Protected Workspace */}
+        {/* Workspace */}
         <Route
           path="/workspace/:game/:platform"
+          element={
+            <ProtectedRoute>
+              <Workspace />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Workspace Pages */}
+        <Route
+          path="/workspace/:game/:platform/:page"
           element={
             <ProtectedRoute>
               <Workspace />

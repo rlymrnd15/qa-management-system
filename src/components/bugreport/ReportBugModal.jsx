@@ -15,41 +15,75 @@ function ReportBugModal({
 
   const isDev = role?.toLowerCase() === "dev";
 
-  console.log("CURRENT USER ROLE:", role);
-  console.log("IS DEV:", isDev);
-
   const [formData, setFormData] = useState({
     title: "",
-    version: build?.version || "",
+    version: "",
     device: "",
     osVersion: "",
     priority: "P2",
-    status: "Open",
+
+    reproducible: "Not Tested",
+
+    ticketUrl: "",
+
     impact: "User Issue",
+
+    status: "Open",
+
+    developerName: "",
+
+    fixConfirmationStatus: "Not Confirmed",
+
     steps: "",
     evidenceLink: "",
-     qaComments: "",
+
+    qaComments: "",
     developerComments: "",
   });
 
-  // ==============================
+  // ==========================================
   // LOAD BUG DATA
-  // ==============================
+  // ==========================================
 
   useEffect(() => {
     if (bug) {
       setFormData({
         title: bug.title || "",
-        version: bug.version || "",
+        version: bug.version || build?.version || "",
         device: bug.device || "",
         osVersion: bug.osVersion || "",
+
         priority: bug.priority || "P2",
-        status: bug.status || "Open",
-        impact: bug.impact || "User Issue",
-        steps: bug.steps || "",
-        evidenceLink: bug.evidenceLink || "",
-        qaComments: bug.qaComments || "",
-        developerComments: bug.developerComments || "",
+
+        reproducible:
+          bug.reproducible || "Not Tested",
+
+        ticketUrl:
+          bug.ticketUrl || "",
+
+        impact:
+          bug.impact || "User Issue",
+
+        status:
+          bug.status || "Open",
+
+        developerName:
+          bug.developerName || "",
+
+        fixConfirmationStatus:
+          bug.fixConfirmationStatus || "Not Confirmed",
+
+        steps:
+          bug.steps || "",
+
+        evidenceLink:
+          bug.evidenceLink || "",
+
+        qaComments:
+          bug.qaComments || "",
+
+        developerComments:
+          bug.developerComments || "",
       });
     } else {
       setFormData({
@@ -57,20 +91,33 @@ function ReportBugModal({
         version: build?.version || "",
         device: "",
         osVersion: "",
+
         priority: "P2",
-        status: "Open",
+
+        reproducible: "Not Tested",
+
+        ticketUrl: "",
+
         impact: "User Issue",
+
+        status: "Open",
+
+        developerName: "",
+
+        fixConfirmationStatus: "Not Confirmed",
+
         steps: "",
         evidenceLink: "",
+
         qaComments: "",
         developerComments: "",
       });
     }
   }, [bug, build, isOpen]);
 
-  // ==============================
+  // ==========================================
   // HANDLE INPUT
-  // ==============================
+  // ==========================================
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({
@@ -79,52 +126,125 @@ function ReportBugModal({
     }));
   };
 
-  // ==============================
+  // ==========================================
   // HANDLE SUBMIT
-  // ==============================
+  // ==========================================
 
   const handleSubmit = () => {
+    if (!formData.title.trim()) {
+      alert("Please enter an issue title.");
+      return;
+    }
+
+    if (!formData.device.trim()) {
+      alert("Please enter the device.");
+      return;
+    }
+
+    if (!formData.osVersion.trim()) {
+      alert("Please enter the OS version.");
+      return;
+    }
+
+    if (!formData.steps.trim()) {
+      alert("Please enter the steps to reproduce.");
+      return;
+    }
+
     const newBug = {
       id: bug ? bug.id : Date.now(),
 
-      game: game || bug?.game,
-      platform: platform || bug?.platform,
+      // ======================================
+      // PROJECT INFORMATION
+      // ======================================
 
-      build: build?.version || bug?.build,
+      game:
+        game || bug?.game,
 
-      // QA fields
-      title: formData.title,
-      device: formData.device,
-      version: formData.version,
-      osVersion: formData.osVersion,
-      impact: formData.impact,
-      steps: formData.steps,
-      evidenceLink: formData.evidenceLink,
+      platform:
+        platform || bug?.platform,
 
-      qaComments: !isDev
-        ? formData.qaComments
-        : bug?.qaComments || "",
+      build:
+        build?.version || bug?.build,
 
-      // DEV fields
-      priority: isDev
-        ? formData.priority
-        : bug?.priority || "P2",
+      version:
+        formData.version,
 
-      status: isDev
-        ? formData.status
-        : bug?.status || "Open",
+      // ======================================
+      // QA INFORMATION
+      // ======================================
 
-      developerComments: isDev
-        ? formData.developerComments
-        : bug?.developerComments || "",
+      title:
+        formData.title,
 
-      reporter: bug
-        ? bug.reporter
-        : "Raily",
+      device:
+        formData.device,
 
-      date: bug
-        ? bug.date
-        : new Date().toLocaleDateString(),
+      osVersion:
+        formData.osVersion,
+
+      reproducible:
+        formData.reproducible,
+
+      steps:
+        formData.steps,
+
+      evidenceLink:
+        formData.evidenceLink,
+
+      impact:
+        formData.impact,
+
+      ticketUrl:
+        formData.ticketUrl,
+
+      qaComments:
+        !isDev
+          ? formData.qaComments
+          : bug?.qaComments || "",
+
+      // ======================================
+      // DEV INFORMATION
+      // ======================================
+
+      priority:
+        isDev
+          ? formData.priority
+          : bug?.priority || "P2",
+
+      status:
+        isDev
+          ? formData.status
+          : bug?.status || "Open",
+
+      developerName:
+        isDev
+          ? formData.developerName
+          : bug?.developerName || "",
+
+      developerComments:
+        isDev
+          ? formData.developerComments
+          : bug?.developerComments || "",
+
+      fixConfirmationStatus:
+        isDev
+          ? formData.fixConfirmationStatus
+          : bug?.fixConfirmationStatus || "Not Confirmed",
+
+      // ======================================
+      // REPORT INFORMATION
+      // ======================================
+
+      reporter:
+        bug
+          ? bug.reporter
+          : "Raily",
+
+      date:
+        bug
+          ? bug.date
+          : new Date().toLocaleDateString(),
     };
 
     console.log("BUG SUBMITTED:", newBug);
@@ -139,17 +259,26 @@ function ReportBugModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-8">
 
-        {/* HEADER */}
+      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-8 shadow-xl">
+
+        {/* ==========================================
+            HEADER
+        ========================================== */}
+
         <div className="mb-6 flex items-center justify-between">
+
           <div>
             <h2 className="text-2xl font-bold">
-              {bug ? "Edit Bug" : "Report New Bug"}
+              {bug
+                ? "Edit Bug"
+                : "Report New Bug"}
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              {isDev ? "DEV team access" : "QA team access"}
+              {isDev
+                ? "DEV team access"
+                : "QA team access"}
             </p>
           </div>
 
@@ -157,23 +286,32 @@ function ReportBugModal({
             onClick={onClose}
             className="rounded-lg p-2 hover:bg-slate-100"
           >
-            <X />
+            <X size={20} />
           </button>
+
         </div>
 
-        {/* FORM */}
+        {/* ==========================================
+            FORM
+        ========================================== */}
+
         <div className="grid gap-5 md:grid-cols-2">
 
           {/* ISSUE TITLE */}
+
           <div>
             <label className="text-sm font-semibold">
               Issue Title
             </label>
 
             <input
+              type="text"
               value={formData.title}
               onChange={(e) =>
-                handleChange("title", e.target.value)
+                handleChange(
+                  "title",
+                  e.target.value
+                )
               }
               className="mt-2 w-full rounded-xl border p-3"
               placeholder="Enter bug title"
@@ -181,36 +319,46 @@ function ReportBugModal({
           </div>
 
           {/* VERSION */}
+
           <div>
             <label className="text-sm font-semibold">
               Version Number
             </label>
 
             <input
+              type="text"
               value={formData.version}
               readOnly={!!build}
               onChange={(e) =>
-                handleChange("version", e.target.value)
+                handleChange(
+                  "version",
+                  e.target.value
+                )
               }
               className={`mt-2 w-full rounded-xl border p-3 ${
                 build
                   ? "cursor-not-allowed bg-slate-100 text-slate-500"
                   : ""
               }`}
-              placeholder="Example: 2.5.1"
+              placeholder="Example: 2.5.4"
             />
           </div>
 
           {/* DEVICE */}
+
           <div>
             <label className="text-sm font-semibold">
               Device
             </label>
 
             <input
+              type="text"
               value={formData.device}
               onChange={(e) =>
-                handleChange("device", e.target.value)
+                handleChange(
+                  "device",
+                  e.target.value
+                )
               }
               className="mt-2 w-full rounded-xl border p-3"
               placeholder="Example: iPhone 15"
@@ -218,22 +366,28 @@ function ReportBugModal({
           </div>
 
           {/* OS VERSION */}
+
           <div>
             <label className="text-sm font-semibold">
               OS Version
             </label>
 
             <input
+              type="text"
               value={formData.osVersion}
               onChange={(e) =>
-                handleChange("osVersion", e.target.value)
+                handleChange(
+                  "osVersion",
+                  e.target.value
+                )
               }
               className="mt-2 w-full rounded-xl border p-3"
               placeholder="Example: iOS 18"
             />
           </div>
 
-          {/* PRIORITY — DEV ONLY */}
+          {/* PRIORITY */}
+
           <div>
             <label className="text-sm font-semibold">
               Bug Priority
@@ -242,14 +396,25 @@ function ReportBugModal({
             <select
               value={formData.priority}
               onChange={(e) =>
-                handleChange("priority", e.target.value)
+                handleChange(
+                  "priority",
+                  e.target.value
+                )
               }
               disabled={!isDev}
               className="mt-2 w-full rounded-xl border p-3 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
             >
-              <option>P0</option>
-              <option>P1</option>
-              <option>P2</option>
+              <option value="P0">
+                P0
+              </option>
+
+              <option value="P1">
+                P1
+              </option>
+
+              <option value="P2">
+                P2
+              </option>
             </select>
 
             {!isDev && (
@@ -259,7 +424,82 @@ function ReportBugModal({
             )}
           </div>
 
-          {/* STATUS — DEV ONLY */}
+          {/* REPRODUCIBLE */}
+
+          <div>
+            <label className="text-sm font-semibold">
+              Reproducible
+            </label>
+
+            <select
+              value={formData.reproducible}
+              onChange={(e) =>
+                handleChange(
+                  "reproducible",
+                  e.target.value
+                )
+              }
+              className="mt-2 w-full rounded-xl border p-3"
+            >
+              <option value="Yes">
+                Yes
+              </option>
+
+              <option value="No">
+                No
+              </option>
+
+              <option value="Not Tested">
+                Not Tested
+              </option>
+            </select>
+          </div>
+
+          {/* ISSUE IMPACT */}
+
+          <div>
+            <label className="text-sm font-semibold">
+              QA Issue Impact
+            </label>
+
+            <select
+              value={formData.impact}
+              onChange={(e) =>
+                handleChange(
+                  "impact",
+                  e.target.value
+                )
+              }
+              className="mt-2 w-full rounded-xl border p-3"
+            >
+              <option value="Revenue Issue">
+                Revenue Issue
+              </option>
+
+              <option value="User Issue">
+                User Issue
+              </option>
+
+              <option value="Logging Issue">
+                Logging Issue
+              </option>
+
+              <option value="Other Issue">
+                Other Issue
+              </option>
+
+              <option value="Device Issue">
+                Device Issue
+              </option>
+
+              <option value="SLED Issue">
+                SLED Issue
+              </option>
+            </select>
+          </div>
+
+          {/* STATUS */}
+
           <div>
             <label className="text-sm font-semibold">
               Status
@@ -268,14 +508,37 @@ function ReportBugModal({
             <select
               value={formData.status}
               onChange={(e) =>
-                handleChange("status", e.target.value)
+                handleChange(
+                  "status",
+                  e.target.value
+                )
               }
               disabled={!isDev}
               className="mt-2 w-full rounded-xl border p-3 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
             >
-              <option>Open</option>
-              <option>Pending</option>
-              <option>Closed</option>
+              <option value="Open">
+                Open
+              </option>
+
+              <option value="Investigation">
+                Investigation
+              </option>
+
+              <option value="Ongoing Fix">
+                Ongoing Fix
+              </option>
+
+              <option value="Resolved">
+                Resolved
+              </option>
+
+              <option value="To Postpone">
+                To Postpone
+              </option>
+
+              <option value="Not a Bug">
+                Not a Bug
+              </option>
             </select>
 
             {!isDev && (
@@ -285,30 +548,110 @@ function ReportBugModal({
             )}
           </div>
 
-          {/* IMPACT — QA CAN EDIT */}
+          {/* TICKET URL */}
+
           <div>
             <label className="text-sm font-semibold">
-              Issue Impact
+              Ticket URL
+              <span className="ml-1 font-normal text-slate-400">
+                (optional)
+              </span>
+            </label>
+
+            <input
+              type="url"
+              value={formData.ticketUrl}
+              onChange={(e) =>
+                handleChange(
+                  "ticketUrl",
+                  e.target.value
+                )
+              }
+              className="mt-2 w-full rounded-xl border p-3"
+              placeholder="https://..."
+            />
+          </div>
+
+          {/* DEVELOPER NAME */}
+
+          <div>
+            <label className="text-sm font-semibold">
+              Assigned Developer
+            </label>
+
+            <input
+              type="text"
+              value={formData.developerName}
+              onChange={(e) =>
+                handleChange(
+                  "developerName",
+                  e.target.value
+                )
+              }
+              disabled={!isDev}
+              className="mt-2 w-full rounded-xl border p-3 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+              placeholder="Developer name"
+            />
+
+            {!isDev && (
+              <p className="mt-1 text-xs text-slate-500">
+                Only the DEV team can assign a developer.
+              </p>
+            )}
+          </div>
+
+          {/* FIX CONFIRMATION STATUS */}
+
+          <div>
+            <label className="text-sm font-semibold">
+              Fix Confirmation Status
             </label>
 
             <select
-              value={formData.impact}
-              onChange={(e) =>
-                handleChange("impact", e.target.value)
+              value={
+                formData.fixConfirmationStatus
               }
-              className="mt-2 w-full rounded-xl border p-3"
+              onChange={(e) =>
+                handleChange(
+                  "fixConfirmationStatus",
+                  e.target.value
+                )
+              }
+              disabled={!isDev}
+              className="mt-2 w-full rounded-xl border p-3 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
             >
-              <option>Revenue Issue</option>
-              <option>User Issue</option>
-              <option>Logging Issue</option>
-              <option>Other Issue</option>
+              <option value="Not Confirmed">
+                Not Confirmed
+              </option>
+
+              <option value="Pending Confirmation">
+                Pending Confirmation
+              </option>
+
+              <option value="Confirmed">
+                Confirmed
+              </option>
+
+              <option value="Failed">
+                Failed
+              </option>
             </select>
+
+            {!isDev && (
+              <p className="mt-1 text-xs text-slate-500">
+                Fix confirmation can only be changed by the DEV team.
+              </p>
+            )}
           </div>
 
         </div>
 
-        {/* STEPS */}
+        {/* ==========================================
+            STEPS TO REPRODUCE
+        ========================================== */}
+
         <div className="mt-5">
+
           <label className="text-sm font-semibold">
             Steps to Reproduce
           </label>
@@ -316,30 +659,49 @@ function ReportBugModal({
           <textarea
             value={formData.steps}
             onChange={(e) =>
-              handleChange("steps", e.target.value)
+              handleChange(
+                "steps",
+                e.target.value
+              )
             }
             className="mt-2 h-32 w-full rounded-xl border p-3"
-            placeholder="1. Open game..."
+            placeholder={"1. Open the game...\n2. Go to...\n3. Observe..."}
           />
+
         </div>
 
-        {/* EVIDENCE */}
+        {/* ==========================================
+            EVIDENCE LINK
+        ========================================== */}
+
         <div className="mt-5">
+
           <label className="text-sm font-semibold">
             Evidence Link
+            <span className="ml-1 font-normal text-slate-400">
+              (optional)
+            </span>
           </label>
 
           <input
+            type="url"
             value={formData.evidenceLink}
             onChange={(e) =>
-              handleChange("evidenceLink", e.target.value)
+              handleChange(
+                "evidenceLink",
+                e.target.value
+              )
             }
             className="mt-2 w-full rounded-xl border p-3"
             placeholder="https://drive.google.com/..."
           />
+
         </div>
 
-        {/* QA COMMENTS */}
+        {/* ==========================================
+            QA COMMENTS
+        ========================================== */}
+
         <div className="mt-5">
 
           <label className="text-sm font-semibold">
@@ -349,10 +711,10 @@ function ReportBugModal({
           <textarea
             value={formData.qaComments}
             onChange={(e) =>
-              setFormData({
-                ...formData,
-                qaComments: e.target.value,
-              })
+              handleChange(
+                "qaComments",
+                e.target.value
+              )
             }
             disabled={isDev}
             className="mt-2 h-24 w-full rounded-xl border p-3 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
@@ -371,8 +733,12 @@ function ReportBugModal({
 
         </div>
 
-        {/* DEVELOPER COMMENTS — DEV ONLY */}
+        {/* ==========================================
+            DEVELOPER COMMENTS
+        ========================================== */}
+
         <div className="mt-5">
+
           <label className="text-sm font-semibold">
             Developer Comments
           </label>
@@ -399,23 +765,31 @@ function ReportBugModal({
               Developer comments can only be changed by the DEV team.
             </p>
           )}
+
         </div>
 
-        {/* BUTTONS */}
+        {/* ==========================================
+            BUTTONS
+        ========================================== */}
+
         <div className="mt-6 flex justify-end gap-3">
 
           <button
+            type="button"
             onClick={onClose}
-            className="rounded-xl px-5 py-3 hover:bg-slate-100"
+            className="rounded-xl px-5 py-3 font-medium hover:bg-slate-100"
           >
             Cancel
           </button>
 
           <button
+            type="button"
             onClick={handleSubmit}
             className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
           >
-            {bug ? "Save Changes" : "Submit Bug"}
+            {bug
+              ? "Save Changes"
+              : "Submit Bug"}
           </button>
 
         </div>

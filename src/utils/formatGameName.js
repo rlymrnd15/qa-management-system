@@ -1,6 +1,7 @@
 export function formatGameName(game) {
   const gameNames = {
     "snake-io": "Snake.io",
+    "piano-tiles": "Piano Tiles",
     "piano-tiles-2": "Piano Tiles 2",
     "watch-pet": "Watch Pet",
     "stacky-bird": "Stacky Bird",
