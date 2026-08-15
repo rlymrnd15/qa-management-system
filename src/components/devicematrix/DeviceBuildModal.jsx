@@ -11,18 +11,21 @@ function DeviceBuildModal({
   const [version, setVersion] = useState("");
   const [releaseDate, setReleaseDate] = useState("");
   const [latest, setLatest] = useState(false);
+  const [description, setDescription] = useState("");
 
   useEffect(() => {
-  if (build) {
-    setVersion(build.version || "");
-    setReleaseDate(build.releaseDate || "");
-    setLatest(build.latest || false);
-  } else {
-    setVersion("");
-    setReleaseDate("");
-    setLatest(false);
-  }
-}, [build, isOpen]);
+    if (build) {
+      setVersion(build.version || "");
+      setReleaseDate(build.releaseDate || "");
+      setLatest(build.latest || false);
+      setDescription(build.description || "");
+    } else {
+      setVersion("");
+      setReleaseDate("");
+      setLatest(false);
+      setDescription("");
+    }
+  }, [build, isOpen]);
 
   if (!isOpen) return null;
 
@@ -30,7 +33,7 @@ function DeviceBuildModal({
     e.preventDefault();
 
     if (!version || !releaseDate) {
-      alert("Please complete all fields.");
+      alert("Please complete all required fields.");
       return;
     }
 
@@ -41,14 +44,16 @@ function DeviceBuildModal({
       version,
       releaseDate,
       latest,
+      description,
     });
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
 
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
 
+        {/* Header */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold">
             {build ? "Edit Build" : "Add Build"}
@@ -66,22 +71,22 @@ function DeviceBuildModal({
           {/* Game */}
           <div>
             <label className="mb-2 block text-sm font-semibold">
-                Game
+              Game
             </label>
 
             <div className="w-full rounded-lg border bg-slate-50 px-4 py-3 font-medium">
-                {game}
+              {game}
             </div>
           </div>
 
           {/* Platform */}
           <div>
             <label className="mb-2 block text-sm font-semibold">
-                Platform
+              Platform
             </label>
 
             <div className="w-full rounded-lg border bg-slate-50 px-4 py-3 font-medium capitalize">
-                {platform}
+              {platform}
             </div>
           </div>
 
@@ -96,7 +101,7 @@ function DeviceBuildModal({
               value={version}
               onChange={(e) => setVersion(e.target.value)}
               placeholder="Example: 2.5.3"
-              className="w-full rounded-lg border px-4 py-3"
+              className="w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-500"
             />
           </div>
 
@@ -110,12 +115,30 @@ function DeviceBuildModal({
               type="date"
               value={releaseDate}
               onChange={(e) => setReleaseDate(e.target.value)}
-              className="w-full rounded-lg border px-4 py-3"
+              className="w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-500"
             />
           </div>
 
+          {/* Build Description */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold">
+              Build Description / DEV Notes
+            </label>
+
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe the changes, fixes, updates, or important testing notes for this build..."
+              className="h-28 w-full resize-none rounded-lg border px-4 py-3 outline-none focus:border-blue-500"
+            />
+
+            <p className="mt-1 text-xs text-slate-500">
+              Add any important information that QA should know about this build.
+            </p>
+          </div>
+
           {/* Latest */}
-          <label className="flex items-center gap-3">
+          <label className="flex cursor-pointer items-center gap-3">
             <input
               type="checkbox"
               checked={latest}
