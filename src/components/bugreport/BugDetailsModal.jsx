@@ -2,12 +2,24 @@ import { X } from "lucide-react";
 
 function BugDetailsModal({
   bug,
+  builds,
   onClose,
   onEdit,
   onDelete,
+  onUpdate,
   isDev,
 }) {
   if (!bug) return null;
+
+  const matchingBuild = builds.find(
+  (build) =>
+    build.game === bug.game &&
+    build.platform === bug.platform &&
+    build.version === bug.version
+);
+
+const buildDescription =
+  matchingBuild?.description || "No build description provided.";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -57,6 +69,11 @@ function BugDetailsModal({
           />
 
           <Info
+            label="Build Description"
+            value={buildDescription}
+          />
+
+          <Info
             label="Reproducible on Live Build"
             value={bug.reproducibleLive || "Not Tested"}
           />
@@ -100,6 +117,41 @@ function BugDetailsModal({
               </p>
             )}
           </div>
+        </div>
+
+        {/* BUILD INFORMATION */}
+        <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50 p-6">
+
+          <h3 className="mb-5 text-xl font-bold">
+            Build Information
+          </h3>
+
+          <div className="grid gap-5 md:grid-cols-2">
+
+            <Info
+              label="Build Version"
+              value={build?.version}
+            />
+
+            <Info
+              label="Release Date"
+              value={build?.releaseDate}
+            />
+
+          </div>
+
+          <div className="mt-5">
+
+            <p className="text-sm font-semibold">
+              Build Description / DEV Notes
+            </p>
+
+            <div className="mt-2 whitespace-pre-wrap rounded-xl bg-white p-4">
+              {build?.description || "No build description provided."}
+            </div>
+
+          </div>
+
         </div>
 
         {/* QA COMMENTS */}

@@ -281,6 +281,7 @@ const handleUpdateDeveloperChanges = async (updatedBug) => {
       {/* BUG DETAILS */}
       <BugDetailsModal
         bug={selectedBug}
+        build={build}
         onClose={() => setSelectedBug(null)}
         isDev={isDev}
         onUpdate={handleUpdateDeveloperChanges}

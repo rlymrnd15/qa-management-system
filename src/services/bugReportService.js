@@ -9,14 +9,18 @@ import {
 
 import { db } from "../firebase";
 
-const bugsCollection = collection(db, "bugReports");
+const bugsCollection = collection(
+  db,
+  "bugReports"
+);
 
-// ==============================
+// ==========================================
 // GET ALL BUG REPORTS
-// ==============================
-
+// ==========================================
 export const getBugReports = async () => {
-  const snapshot = await getDocs(bugsCollection);
+  const snapshot = await getDocs(
+    bugsCollection
+  );
 
   return snapshot.docs.map((document) => ({
     ...document.data(),
@@ -24,14 +28,12 @@ export const getBugReports = async () => {
   }));
 };
 
-// ==============================
+// ==========================================
 // ADD BUG REPORT
-// ==============================
-
+// ==========================================
 export const addBugReport = async (bug) => {
   const { id, ...data } = bug;
 
-  // Remove undefined values
   const cleanData = Object.fromEntries(
     Object.entries(data).filter(
       ([, value]) => value !== undefined
@@ -49,14 +51,13 @@ export const addBugReport = async (bug) => {
   };
 };
 
-// ==============================
+// ==========================================
 // UPDATE BUG REPORT
-// ==============================
-
-export const updateBugReport = async (id, bug) => {
-  console.log("UPDATE BUG ID:", id);
-  console.log("UPDATE BUG DATA:", bug);
-
+// ==========================================
+export const updateBugReport = async (
+  id,
+  bug
+) => {
   if (!id) {
     throw new Error("Bug ID is missing.");
   }
@@ -69,14 +70,16 @@ export const updateBugReport = async (id, bug) => {
 
   const { id: ignoredId, ...data } = bug;
 
-  // Remove undefined values
   const cleanData = Object.fromEntries(
     Object.entries(data).filter(
       ([, value]) => value !== undefined
     )
   );
 
-  await updateDoc(bugRef, cleanData);
+  await updateDoc(
+    bugRef,
+    cleanData
+  );
 
   return {
     ...cleanData,
@@ -84,13 +87,10 @@ export const updateBugReport = async (id, bug) => {
   };
 };
 
-// ==============================
+// ==========================================
 // DELETE BUG REPORT
-// ==============================
-
+// ==========================================
 export const deleteBugReport = async (id) => {
-  console.log("DELETE BUG ID:", id);
-
   if (!id) {
     throw new Error("Bug ID is missing.");
   }

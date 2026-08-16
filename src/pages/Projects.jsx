@@ -7,6 +7,12 @@ import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 
+import microtownPic from "../assets/games/microtownpic.png";
+import pianoTilesPic from "../assets/games/pianotilespic.png";
+import snakeIoPic from "../assets/games/snakeiopic.png";
+import watchPetPic from "../assets/games/watchpetpic.png";
+import zendokuPic from "../assets/games/zendokupic.png";
+
 
 
 function Projects() {

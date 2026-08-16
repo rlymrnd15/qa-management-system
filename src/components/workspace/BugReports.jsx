@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 
 import BugStats from "../bugreport/BugStats";
-import BugDetailsModal from "../bugreport/BugDetailsModal";
 import SearchFilters from "../bugreport/SearchFilters";
 
 import BuildsGrid from "../build/BuildsGrid";
@@ -15,9 +14,11 @@ import AddBuildModal from "../build/AddBuildModal";
 import { getBugReports } from "../../services/bugReportService";
 
 import {
-  getBuilds,
-  addBuild,
-} from "../../services/buildService";
+  getDeviceBuilds,
+  addDeviceBuild,
+  updateDeviceBuild,
+  deleteDeviceBuild,
+} from "../../services/deviceBuildService";
 
 function BugReports({
   game,
@@ -25,7 +26,7 @@ function BugReports({
 }) {
   const { role } = useAuth();
 
-  const isDev = role === "dev";
+  const isDev = role?.toLowerCase() === "dev";
 
   const [bugs, setBugs] = useState([]);
   const [buildList, setBuildList] = useState([]);
@@ -41,6 +42,7 @@ function BugReports({
   const [device, setDevice] = useState("All");
 
   const [openBuildModal, setOpenBuildModal] = useState(false);
+  const [editingBuild, setEditingBuild] = useState(null);
 
   // Load bugs
   useEffect(() => {
@@ -48,28 +50,36 @@ function BugReports({
       try {
         const [bugData, buildData] = await Promise.all([
           getBugReports(),
-          getBuilds(),
+          getDeviceBuilds(),
         ]);
 
         console.log("BUGS:", bugData);
 console.log("BUILDS FROM FIRESTORE:", buildData);
 
 buildData.forEach((build) => {
-  console.log("BUILD:", {
+  console.log("BUG REPORT BUILD:", {
     id: build.id,
     version: build.version,
     game: build.game,
     platform: build.platform,
+    releaseDate: build.releaseDate,
+    latest: build.latest,
+    description: build.description,
   });
 });
+
 console.log("CURRENT GAME:", game);
 console.log("CURRENT PLATFORM:", platform);
 
         setBugs(bugData);
         setBuildList(buildData);
       } catch (error) {
-        console.error("Error loading bug reports/builds:", error);
-      } finally {
+          console.error("Error saving build:", error);
+
+          alert(
+            error.message || "Failed to save build."
+          );
+        } finally {
         setLoading(false);
       }
     };
@@ -89,7 +99,32 @@ console.log("CURRENT PLATFORM:", platform);
       build.game === game &&
       build.platform === platform
   );
-  
+
+  const handleEditBuild = (build) => {
+    console.log("EDIT BUILD:", build);
+
+    setEditingBuild(build);
+    setOpenBuildModal(true);
+  };
+
+  const handleDeleteBuild = async (build) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete Build v${build.version}?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await deleteDeviceBuild(build.id);
+
+      setBuildList((prev) =>
+        prev.filter((item) => item.id !== build.id)
+      );
+    } catch (error) {
+      console.error("Error deleting build:", error);
+      alert("Failed to delete build.");
+    }
+  };
 
   // Devices
   const devices = [
@@ -137,10 +172,6 @@ console.log("CURRENT PLATFORM:", platform);
     );
   }
 
-  // ==========================================
-  // OTHERWISE SHOW BUILD CARDS
-  // ==========================================
-
   return (
     <div>
       {/* Header */}
@@ -185,37 +216,70 @@ console.log("CURRENT PLATFORM:", platform);
       <BuildsGrid
         builds={gameBuilds}
         bugs={gameBugs}
+        isDev={isDev}
         onSelectBuild={(build) => {
-          console.log("Selected build:", build);
+          console.log("SELECTED BUILD FROM BUG REPORTS:", build);
           setSelectedBuild(build);
         }}
+        onEditBuild={handleEditBuild}
+        onDeleteBuild={handleDeleteBuild}
       />
 
       <AddBuildModal
         isOpen={openBuildModal}
-        onClose={() => setOpenBuildModal(false)}
+        build={editingBuild}
         game={game}
         platform={platform}
+        onClose={() => {
+          setOpenBuildModal(false);
+          setEditingBuild(null);
+        }}
         onSubmit={async (newBuild) => {
           try {
-            const savedBuild = await addBuild({
-              ...newBuild,
-              game,
-              platform,
-            });
+            if (editingBuild) {
+              // EDIT
+              const updatedBuild = await updateDeviceBuild(
+                editingBuild.id,
+                {
+                  ...newBuild,
+                  game,
+                  platform,
+                }
+              );
 
-            setBuildList((prevBuilds) => {
-              const updatedBuilds = savedBuild.latest
-                ? prevBuilds.map((build) => ({
-                    ...build,
-                    latest: false,
-                  }))
-                : prevBuilds;
+              setBuildList((prevBuilds) =>
+                prevBuilds.map((build) =>
+                  build.id === updatedBuild.id
+                    ? updatedBuild
+                    : build
+                )
+              );
 
-              return [savedBuild, ...updatedBuilds];
-            });
+            } else {
+              // ADD
+              const savedBuild = await addDeviceBuild({
+                ...newBuild,
+                game,
+                platform,
+              });
+
+              setBuildList((prevBuilds) => {
+                const updatedBuilds = savedBuild.latest
+                  ? prevBuilds.map((build) => ({
+                      ...build,
+                      latest: false,
+                    }))
+                  : prevBuilds;
+
+                return [
+                  savedBuild,
+                  ...updatedBuilds,
+                ];
+              });
+            }
 
             setOpenBuildModal(false);
+            setEditingBuild(null);
 
           } catch (error) {
             console.error("Error saving build:", error);
@@ -223,6 +287,7 @@ console.log("CURRENT PLATFORM:", platform);
           }
         }}
       />
+
     </div>
   );
 }

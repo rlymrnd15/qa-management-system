@@ -1,6 +1,7 @@
 import {
   collection,
   getDocs,
+  getDoc,
   addDoc,
   updateDoc,
   deleteDoc,
@@ -17,7 +18,9 @@ const buildsCollection = collection(
   "deviceBuilds"
 );
 
-// Get all builds
+// ==========================================
+// GET BUILDS
+// ==========================================
 export const getDeviceBuilds = async () => {
   const snapshot = await getDocs(buildsCollection);
 
@@ -27,25 +30,52 @@ export const getDeviceBuilds = async () => {
   }));
 };
 
-// Add build
+// ==========================================
+// ADD BUILD
+// ==========================================
 export const addDeviceBuild = async (build) => {
   const { id, ...data } = build;
 
-  // If this build is marked as latest,
-  // remove latest status from other builds
-  // of the same game + platform.
+  // ------------------------------------------
+  // CHECK FOR DUPLICATE BUILD
+  // Same game + platform + version + date
+  // ------------------------------------------
+  const duplicateQuery = query(
+    buildsCollection,
+    where("game", "==", data.game),
+    where("platform", "==", data.platform),
+    where("version", "==", data.version),
+    where("releaseDate", "==", data.releaseDate)
+  );
+
+  const duplicateSnapshot = await getDocs(
+    duplicateQuery
+  );
+
+  if (!duplicateSnapshot.empty) {
+    throw new Error(
+      `Build v${data.version} with release date ${data.releaseDate} already exists for this game and platform.`
+    );
+  }
+
+  // ------------------------------------------
+  // IF NEW BUILD IS LATEST
+  // REMOVE LATEST FROM OTHER BUILDS
+  // ------------------------------------------
   if (data.latest) {
-    const q = query(
+    const latestQuery = query(
       buildsCollection,
       where("game", "==", data.game),
       where("platform", "==", data.platform)
     );
 
-    const snapshot = await getDocs(q);
+    const latestSnapshot = await getDocs(
+      latestQuery
+    );
 
     const batch = writeBatch(db);
 
-    snapshot.docs.forEach((document) => {
+    latestSnapshot.docs.forEach((document) => {
       batch.update(document.ref, {
         latest: false,
       });
@@ -54,6 +84,9 @@ export const addDeviceBuild = async (build) => {
     await batch.commit();
   }
 
+  // ------------------------------------------
+  // CREATE BUILD
+  // ------------------------------------------
   const docRef = await addDoc(
     buildsCollection,
     data
@@ -65,7 +98,9 @@ export const addDeviceBuild = async (build) => {
   };
 };
 
-// Update build
+// ==========================================
+// UPDATE BUILD
+// ==========================================
 export const updateDeviceBuild = async (
   id,
   build
@@ -78,21 +113,52 @@ export const updateDeviceBuild = async (
 
   const { id: ignoredId, ...data } = build;
 
-  // If this build is being marked as latest,
-  // remove latest status from other builds
-  // of the same game + platform.
+  // ------------------------------------------
+  // CHECK FOR DUPLICATE BUILD
+  // Exclude the build currently being edited
+  // ------------------------------------------
+  const duplicateQuery = query(
+    buildsCollection,
+    where("game", "==", data.game),
+    where("platform", "==", data.platform),
+    where("version", "==", data.version),
+    where("releaseDate", "==", data.releaseDate)
+  );
+
+  const duplicateSnapshot = await getDocs(
+    duplicateQuery
+  );
+
+  const duplicateExists =
+    duplicateSnapshot.docs.some(
+      (document) =>
+        document.id !== String(id)
+    );
+
+  if (duplicateExists) {
+    throw new Error(
+      `Build v${data.version} with release date ${data.releaseDate} already exists for this game and platform.`
+    );
+  }
+
+  // ------------------------------------------
+  // IF EDITED BUILD IS LATEST
+  // REMOVE LATEST FROM OTHER BUILDS
+  // ------------------------------------------
   if (data.latest) {
-    const q = query(
+    const latestQuery = query(
       buildsCollection,
       where("game", "==", data.game),
       where("platform", "==", data.platform)
     );
 
-    const snapshot = await getDocs(q);
+    const latestSnapshot = await getDocs(
+      latestQuery
+    );
 
     const batch = writeBatch(db);
 
-    snapshot.docs.forEach((document) => {
+    latestSnapshot.docs.forEach((document) => {
       if (document.id !== String(id)) {
         batch.update(document.ref, {
           latest: false,
@@ -103,7 +169,13 @@ export const updateDeviceBuild = async (
     await batch.commit();
   }
 
-  await updateDoc(buildRef, data);
+  // ------------------------------------------
+  // UPDATE BUILD
+  // ------------------------------------------
+  await updateDoc(
+    buildRef,
+    data
+  );
 
   return {
     ...data,
@@ -111,7 +183,9 @@ export const updateDeviceBuild = async (
   };
 };
 
-// Delete build
+// ==========================================
+// DELETE BUILD + RELATED BUGS + DEVICE TESTS
+// ==========================================
 export const deleteDeviceBuild = async (id) => {
   const buildRef = doc(
     db,
@@ -119,5 +193,127 @@ export const deleteDeviceBuild = async (id) => {
     String(id)
   );
 
-  await deleteDoc(buildRef);
+  // Get the build itself
+  const buildSnapshot = await getDoc(buildRef);
+
+  if (!buildSnapshot.exists()) {
+    throw new Error("Build not found.");
+  }
+
+  const buildData = buildSnapshot.data();
+
+  const {
+    game,
+    platform,
+    version,
+  } = buildData;
+
+  console.log("DELETE BUILD DATA:", {
+    id,
+    game,
+    platform,
+    version,
+  });
+
+  // Get ALL bug reports
+  const bugSnapshot = await getDocs(
+    collection(db, "bugReports")
+  );
+
+  // Get ALL device tests
+  const deviceTestSnapshot = await getDocs(
+    collection(db, "deviceTests")
+  );
+
+  const batch = writeBatch(db);
+
+  let deletedBugs = 0;
+  let deletedDeviceTests = 0;
+
+  // ------------------------------------------
+  // DELETE RELATED BUG REPORTS
+  // ------------------------------------------
+  bugSnapshot.docs.forEach((document) => {
+    const bug = document.data();
+
+    const sameGame =
+      bug.game === game;
+
+    const samePlatform =
+      bug.platform === platform;
+
+    const sameBuild =
+      String(bug.build) === String(version);
+
+    if (
+      sameGame &&
+      samePlatform &&
+      sameBuild
+    ) {
+      console.log(
+        "DELETING BUG:",
+        document.id,
+        bug
+      );
+
+      batch.delete(document.ref);
+      deletedBugs++;
+    }
+  });
+
+  // ------------------------------------------
+  // DELETE RELATED DEVICE TESTS
+  // ------------------------------------------
+  deviceTestSnapshot.docs.forEach((document) => {
+    const deviceTest = document.data();
+
+    const sameGame =
+      deviceTest.game === game;
+
+    const samePlatform =
+      deviceTest.platform === platform;
+
+    const sameBuild =
+      String(deviceTest.build) === String(version);
+
+    if (
+      sameGame &&
+      samePlatform &&
+      sameBuild
+    ) {
+      console.log(
+        "DELETING DEVICE TEST:",
+        document.id,
+        deviceTest
+      );
+
+      batch.delete(document.ref);
+      deletedDeviceTests++;
+    }
+  });
+
+  // ------------------------------------------
+  // DELETE THE BUILD
+  // ------------------------------------------
+  batch.delete(buildRef);
+
+  // ------------------------------------------
+  // COMMIT EVERYTHING
+  // ------------------------------------------
+  await batch.commit();
+
+  console.log(
+    "DELETE COMPLETE:",
+    {
+      build: version,
+      deletedBugs,
+      deletedDeviceTests,
+    }
+  );
+
+  return {
+    deletedBuildId: String(id),
+    deletedBugReports: deletedBugs,
+    deletedDeviceTests,
+  };
 };
