@@ -14,55 +14,90 @@ function SearchFilters({
 
       <div className="flex flex-wrap gap-4">
 
-        {/* Search */}
+        {/* SEARCH */}
         <input
           type="text"
-          placeholder="Search test case..."
+          placeholder="Search test case title..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) =>
+            setSearch(e.target.value)
+          }
           className="flex-1 rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
         />
 
-        {/* Priority */}
+        {/* PRIORITY */}
         <select
           value={priority}
-          onChange={(e) => setPriority(e.target.value)}
+          onChange={(e) =>
+            setPriority(e.target.value)
+          }
           className="rounded-xl border px-4 py-3"
         >
-          <option value="All">All Priorities</option>
-          <option value="Critical">Critical</option>
-          <option value="High">High</option>
-          <option value="Medium">Medium</option>
-          <option value="Low">Low</option>
+          <option value="All">
+            All Priorities
+          </option>
+
+          <option value="P0">
+            P0
+          </option>
+
+          <option value="P1">
+            P1
+          </option>
+
+          <option value="P2">
+            P2
+          </option>
         </select>
 
-        {/* Status */}
+        {/* STATUS */}
         <select
           value={status}
-          onChange={(e) => setStatus(e.target.value)}
+          onChange={(e) =>
+            setStatus(e.target.value)
+          }
           className="rounded-xl border px-4 py-3"
         >
-          <option value="All">All Status</option>
-          <option value="Passed">Passed</option>
-          <option value="Failed">Failed</option>
-          <option value="Not Run">Not Run</option>
+          <option value="All">
+            All Status
+          </option>
+
+          <option value="Passed">
+            Passed
+          </option>
+
+          <option value="Failed">
+            Failed
+          </option>
+
+          <option value="Not Run">
+            Not Run
+          </option>
+
+          <option value="Blocked">
+            Blocked
+          </option>
         </select>
 
-        {/* Platform */}
+        {/* PLATFORM */}
         <select
           value={platform}
-          onChange={(e) => setPlatform(e.target.value)}
+          onChange={(e) =>
+            setPlatform(e.target.value)
+          }
           className="rounded-xl border px-4 py-3"
         >
-          {(platforms ?? []).map((item) => (
-            <option key={item} value={item}>
+          {platforms.map((item) => (
+            <option
+              key={item}
+              value={item}
+            >
               {item}
             </option>
           ))}
         </select>
 
       </div>
-
     </div>
   );
 }

@@ -1,10 +1,12 @@
 import {
   collection,
   getDocs,
+  getDoc,
   addDoc,
   updateDoc,
   deleteDoc,
   doc,
+  serverTimestamp,
 } from "firebase/firestore";
 
 import { db } from "../firebase";
@@ -14,7 +16,9 @@ const deviceTestsCollection = collection(
   "deviceTests"
 );
 
-// Get all device tests from Firestore
+// ==========================================
+// GET ALL DEVICE TESTS
+// ==========================================
 export const getDeviceTests = async () => {
   const snapshot = await getDocs(
     deviceTestsCollection
@@ -26,52 +30,106 @@ export const getDeviceTests = async () => {
   }));
 };
 
-// Add a device test
-export const addDeviceTest = async (deviceTest) => {
+// ==========================================
+// GET SINGLE DEVICE TEST
+// ==========================================
+export const getDeviceTest = async (id) => {
+  const deviceTestRef = doc(
+    db,
+    "deviceTests",
+    String(id)
+  );
+
+  const snapshot = await getDoc(
+    deviceTestRef
+  );
+
+  if (!snapshot.exists()) {
+    throw new Error("Device test not found.");
+  }
+
+  return {
+    ...snapshot.data(),
+    id: snapshot.id,
+  };
+};
+
+// ==========================================
+// ADD DEVICE TEST
+// ==========================================
+export const addDeviceTest = async (
+  deviceTest
+) => {
   const { id, ...data } = deviceTest;
 
   const docRef = await addDoc(
     deviceTestsCollection,
-    data
+    {
+      ...data,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }
   );
 
   return {
-    id: docRef.id,
     ...data,
+    id: docRef.id,
   };
 };
 
-// Update a device test
+// ==========================================
+// UPDATE DEVICE TEST
+// ==========================================
 export const updateDeviceTest = async (
   id,
   deviceTest
 ) => {
-  const deviceRef = doc(
+
+  // IMPORTANT:
+  // Define the document reference before using it.
+  const deviceTestRef = doc(
     db,
     "deviceTests",
     String(id)
   );
 
-  const { id: ignoredId, ...data } = deviceTest;
+  const { id: ignoredId, ...data } =
+    deviceTest;
 
+  // Update Firestore document
   await updateDoc(
-    deviceRef,
-    data
+    deviceTestRef,
+    {
+      ...data,
+      updatedAt: serverTimestamp(),
+    }
   );
 
+  // Return updated object
   return {
-    id: String(id),
     ...data,
+    id: String(id),
   };
 };
 
-// Delete a device test
-export const deleteDeviceTest = async (id) => {
-  const deviceRef = doc(
+// ==========================================
+// DELETE DEVICE TEST
+// ==========================================
+export const deleteDeviceTest = async (
+  id
+) => {
+
+  const deviceTestRef = doc(
     db,
     "deviceTests",
     String(id)
   );
 
-  await deleteDoc(deviceRef);
+  await deleteDoc(
+    deviceTestRef
+  );
+
+  return {
+    deletedDeviceTestId: String(id),
+  };
 };

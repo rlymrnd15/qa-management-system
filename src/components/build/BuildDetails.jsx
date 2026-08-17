@@ -19,7 +19,6 @@ function BuildDetails({
   game,
   platform,
 }) {
-
   const { role } = useAuth();
   const isDev = role?.toLowerCase() === "dev";
 
@@ -32,7 +31,10 @@ function BuildDetails({
   console.log("GAME:", game);
   console.log("PLATFORM:", platform);
 
-  // Bugs belonging ONLY to this build
+  // ==========================================
+  // BUGS FOR THIS BUILD
+  // ==========================================
+
   const buildBugs = bugs.filter(
     (bug) =>
       String(bug.build) === String(build.version) &&
@@ -42,30 +44,54 @@ function BuildDetails({
 
   console.log("BUGS FOR THIS BUILD:", buildBugs);
 
+  // ==========================================
+  // BUG STATUS COUNTS
+  // ==========================================
+
   const totalBugs = buildBugs.length;
-
-  const closed = buildBugs.filter(
-    (bug) => bug.status === "Closed"
-  ).length;
-
-  const pending = buildBugs.filter(
-    (bug) => bug.status === "Pending"
-  ).length;
 
   const open = buildBugs.filter(
     (bug) => bug.status === "Open"
   ).length;
 
+  const resolved = buildBugs.filter(
+    (bug) => bug.status === "Resolved"
+  ).length;
+
+  const investigation = buildBugs.filter(
+    (bug) => bug.status === "Investigation"
+  ).length;
+
+  const ongoingFix = buildBugs.filter(
+    (bug) => bug.status === "Ongoing Fix"
+  ).length;
+
+  const notABug = buildBugs.filter(
+    (bug) => bug.status === "Not a Bug"
+  ).length;
+
+  // ==========================================
+  // ADD / EDIT BUG
+  // ==========================================
+
   const handleSubmit = async (newBug) => {
     try {
-
       console.log("HANDLE SUBMIT:", newBug);
-  console.log("EDITING BUG AT SUBMIT:", editingBug);
-  
+      console.log(
+        "EDITING BUG AT SUBMIT:",
+        editingBug
+      );
+
       if (editingBug) {
+        // EDIT
         const updatedBug = await updateBugReport(
           editingBug.id,
-          newBug
+          {
+            ...newBug,
+            game,
+            platform,
+            build: build.version,
+          }
         );
 
         setBugs((prev) =>
@@ -75,7 +101,9 @@ function BuildDetails({
               : bug
           )
         );
+
       } else {
+        // ADD
         const savedBug = await addBugReport({
           ...newBug,
           game,
@@ -91,37 +119,58 @@ function BuildDetails({
 
       setOpenModal(false);
       setEditingBug(null);
+
     } catch (error) {
-      console.error("Error saving bug:", error);
-      alert("Failed to save bug report.");
+      console.error(
+        "Error saving bug:",
+        error
+      );
+
+      alert(
+        "Failed to save bug report."
+      );
     }
   };
-const handleUpdateDeveloperChanges = async (updatedBug) => {
-  try {
-    const savedBug = await updateBugReport(
-      updatedBug.id,
-      updatedBug
-    );
 
-    setBugs((prev) =>
-      prev.map((bug) =>
-        bug.id === savedBug.id
-          ? savedBug
-          : bug
-      )
-    );
+  // ==========================================
+  // DEVELOPER UPDATE
+  // ==========================================
 
-    setSelectedBug(savedBug);
+  const handleUpdateDeveloperChanges = async (
+    updatedBug
+  ) => {
+    try {
+      const savedBug =
+        await updateBugReport(
+          updatedBug.id,
+          updatedBug
+        );
 
-  } catch (error) {
-    console.error(
-      "Error updating developer changes:",
-      error
-    );
+      setBugs((prev) =>
+        prev.map((bug) =>
+          bug.id === savedBug.id
+            ? savedBug
+            : bug
+        )
+      );
 
-    alert("Failed to update developer changes.");
-  }
-};
+      setSelectedBug(savedBug);
+
+    } catch (error) {
+      console.error(
+        "Error updating developer changes:",
+        error
+      );
+
+      alert(
+        "Failed to update developer changes."
+      );
+    }
+  };
+
+  // ==========================================
+  // DELETE BUG
+  // ==========================================
 
   const handleDelete = async (bug) => {
     const confirmed = window.confirm(
@@ -131,18 +180,34 @@ const handleUpdateDeveloperChanges = async (updatedBug) => {
     if (!confirmed) return;
 
     try {
-      await deleteBugReport(bug.id);
+      await deleteBugReport(
+        bug.id
+      );
 
       setBugs((prev) =>
-        prev.filter((item) => item.id !== bug.id)
+        prev.filter(
+          (item) =>
+            item.id !== bug.id
+        )
       );
 
       setSelectedBug(null);
+
     } catch (error) {
-      console.error("Error deleting bug:", error);
-      alert("Failed to delete bug report.");
+      console.error(
+        "Error deleting bug:",
+        error
+      );
+
+      alert(
+        "Failed to delete bug report."
+      );
     }
   };
+
+  // ==========================================
+  // RENDER
+  // ==========================================
 
   return (
     <div>
@@ -199,9 +264,13 @@ const handleUpdateDeveloperChanges = async (updatedBug) => {
 
       </div>
 
-      {/* STATS */}
-      <div className="mt-8 grid grid-cols-4 gap-4">
+      {/* ========================================
+          STATS
+      ======================================== */}
 
+      <div className="mt-8 grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+
+        {/* TOTAL */}
         <div className="rounded-2xl bg-slate-100 p-5">
           <p className="text-sm text-slate-500">
             Total Bugs
@@ -212,28 +281,9 @@ const handleUpdateDeveloperChanges = async (updatedBug) => {
           </h2>
         </div>
 
-        <div className="rounded-2xl bg-green-50 p-5">
-         <p className="text-sm text-green-700">
-            Closed
-          </p>
-
-          <h2 className="mt-2 text-3xl font-bold">
-            {closed}
-          </h2>
-        </div>
-
-        <div className="rounded-2xl bg-yellow-50 p-5">
-          <p className="text-sm text-yellow-700">
-            Pending
-          </p>
-
-          <h2 className="mt-2 text-3xl font-bold">
-            {pending}
-          </h2>
-        </div>
-
-        <div className="rounded-2xl bg-red-50 p-5">
-          <p className="text-sm text-red-700">
+        {/* OPEN */}
+        <div className="rounded-2xl bg-blue-50 p-5">
+          <p className="text-sm text-blue-700">
             Open
           </p>
 
@@ -242,9 +292,56 @@ const handleUpdateDeveloperChanges = async (updatedBug) => {
           </h2>
         </div>
 
+        {/* INVESTIGATION */}
+        <div className="rounded-2xl bg-yellow-50 p-5">
+          <p className="text-sm text-yellow-700">
+            Investigation
+          </p>
+
+          <h2 className="mt-2 text-3xl font-bold">
+            {investigation}
+          </h2>
+        </div>
+
+        {/* ONGOING FIX */}
+        <div className="rounded-2xl bg-orange-50 p-5">
+          <p className="text-sm text-orange-700">
+            Ongoing Fix
+          </p>
+
+          <h2 className="mt-2 text-3xl font-bold">
+            {ongoingFix}
+          </h2>
+        </div>
+
+        {/* RESOLVED */}
+        <div className="rounded-2xl bg-green-50 p-5">
+          <p className="text-sm text-green-700">
+            Resolved
+          </p>
+
+          <h2 className="mt-2 text-3xl font-bold">
+            {resolved}
+          </h2>
+        </div>
+
+        {/* NOT A BUG */}
+        <div className="rounded-2xl bg-slate-50 p-5">
+          <p className="text-sm text-slate-600">
+            Not a Bug
+          </p>
+
+          <h2 className="mt-2 text-3xl font-bold">
+            {notABug}
+          </h2>
+        </div>
+
       </div>
 
-      {/* BUG LIST */}
+      {/* ========================================
+          BUG LIST
+      ======================================== */}
+
       <div className="mt-10">
 
         <h2 className="mb-4 text-2xl font-bold">
@@ -253,14 +350,22 @@ const handleUpdateDeveloperChanges = async (updatedBug) => {
 
         {buildBugs.length === 0 ? (
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
+          <div className="
+            rounded-2xl
+            border
+            border-slate-200
+            bg-white
+            p-8
+            text-center
+          ">
 
             <p className="font-semibold text-slate-700">
               No bugs found for this build.
             </p>
 
             <p className="mt-1 text-sm text-slate-500">
-              Click "+ Report Bug" to add a bug to Build v{build.version}.
+              Click "+ Report Bug" to add a bug
+              to Build v{build.version}.
             </p>
 
           </div>
@@ -278,13 +383,21 @@ const handleUpdateDeveloperChanges = async (updatedBug) => {
 
       </div>
 
-      {/* BUG DETAILS */}
+      {/* ========================================
+          BUG DETAILS
+      ======================================== */}
+
       <BugDetailsModal
         bug={selectedBug}
         build={build}
-        onClose={() => setSelectedBug(null)}
+        builds={[build]}
+        onClose={() =>
+          setSelectedBug(null)
+        }
         isDev={isDev}
-        onUpdate={handleUpdateDeveloperChanges}
+        onUpdate={
+          handleUpdateDeveloperChanges
+        }
         onEdit={(bug) => {
           setSelectedBug(null);
           setEditingBug(bug);
@@ -293,7 +406,10 @@ const handleUpdateDeveloperChanges = async (updatedBug) => {
         onDelete={handleDelete}
       />
 
-      {/* REPORT BUG */}
+      {/* ========================================
+          REPORT BUG
+      ======================================== */}
+
       <ReportBugModal
         isOpen={openModal}
         bug={editingBug}

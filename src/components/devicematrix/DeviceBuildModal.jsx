@@ -13,12 +13,15 @@ function DeviceBuildModal({
   const [latest, setLatest] = useState(false);
   const [description, setDescription] = useState("");
 
+  // ==========================================
+  // LOAD BUILD DATA WHEN EDITING
+  // ==========================================
   useEffect(() => {
     if (build) {
-      setVersion(build.version || "");
-      setReleaseDate(build.releaseDate || "");
-      setLatest(build.latest || false);
-      setDescription(build.description || "");
+      setVersion(build.version ?? "");
+      setReleaseDate(build.releaseDate ?? "");
+      setLatest(Boolean(build.latest));
+      setDescription(build.description ?? "");
     } else {
       setVersion("");
       setReleaseDate("");
@@ -27,25 +30,52 @@ function DeviceBuildModal({
     }
   }, [build, isOpen]);
 
-  if (!isOpen) return null;
+  // ==========================================
+  // HIDDEN MODAL
+  // ==========================================
+  if (!isOpen) {
+    return null;
+  }
 
+  // ==========================================
+  // SUBMIT
+  // ==========================================
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!version || !releaseDate) {
-      alert("Please complete all required fields.");
+    const trimmedVersion = version.trim();
+    const trimmedDescription = description.trim();
+
+    if (!trimmedVersion) {
+      alert("Please enter a build version.");
       return;
     }
 
-    onSubmit({
-      ...(build || {}),
-      game,
-      platform,
-      version,
+    if (!releaseDate) {
+      alert("Please select a release date.");
+      return;
+    }
+
+    const buildData = {
+      version: trimmedVersion,
       releaseDate,
-      latest,
-      description,
-    });
+      latest: Boolean(latest),
+      description: trimmedDescription,
+    };
+
+    console.log("=================================");
+    console.log(
+      build
+        ? "UPDATING DEVICE BUILD"
+        : "ADDING DEVICE BUILD"
+    );
+    console.log("BUILD ID:", build?.id);
+    console.log("GAME:", game);
+    console.log("PLATFORM:", platform);
+    console.log("BUILD DATA:", buildData);
+    console.log("=================================");
+
+    onSubmit(buildData);
   };
 
   return (
@@ -53,7 +83,9 @@ function DeviceBuildModal({
 
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
 
-        {/* Header */}
+        {/* ========================================
+            HEADER
+        ======================================== */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold">
             {build ? "Edit Build" : "Add Build"}
@@ -66,9 +98,15 @@ function DeviceBuildModal({
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        {/* ========================================
+            FORM
+        ======================================== */}
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-5"
+        >
 
-          {/* Game */}
+          {/* GAME */}
           <div>
             <label className="mb-2 block text-sm font-semibold">
               Game
@@ -79,7 +117,7 @@ function DeviceBuildModal({
             </div>
           </div>
 
-          {/* Platform */}
+          {/* PLATFORM */}
           <div>
             <label className="mb-2 block text-sm font-semibold">
               Platform
@@ -90,7 +128,7 @@ function DeviceBuildModal({
             </div>
           </div>
 
-          {/* Version */}
+          {/* VERSION */}
           <div>
             <label className="mb-2 block text-sm font-semibold">
               Build Version
@@ -99,13 +137,15 @@ function DeviceBuildModal({
             <input
               type="text"
               value={version}
-              onChange={(e) => setVersion(e.target.value)}
+              onChange={(e) =>
+                setVersion(e.target.value)
+              }
               placeholder="Example: 2.5.3"
               className="w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-500"
             />
           </div>
 
-          {/* Release Date */}
+          {/* RELEASE DATE */}
           <div>
             <label className="mb-2 block text-sm font-semibold">
               Release Date
@@ -114,12 +154,14 @@ function DeviceBuildModal({
             <input
               type="date"
               value={releaseDate}
-              onChange={(e) => setReleaseDate(e.target.value)}
+              onChange={(e) =>
+                setReleaseDate(e.target.value)
+              }
               className="w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-500"
             />
           </div>
 
-          {/* Build Description */}
+          {/* DESCRIPTION */}
           <div>
             <label className="mb-2 block text-sm font-semibold">
               Build Description / DEV Notes
@@ -127,7 +169,9 @@ function DeviceBuildModal({
 
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) =>
+                setDescription(e.target.value)
+              }
               placeholder="Describe the changes, fixes, updates, or important testing notes for this build..."
               className="h-28 w-full resize-none rounded-lg border px-4 py-3 outline-none focus:border-blue-500"
             />
@@ -137,12 +181,14 @@ function DeviceBuildModal({
             </p>
           </div>
 
-          {/* Latest */}
+          {/* LATEST */}
           <label className="flex cursor-pointer items-center gap-3">
             <input
               type="checkbox"
               checked={latest}
-              onChange={(e) => setLatest(e.target.checked)}
+              onChange={(e) =>
+                setLatest(e.target.checked)
+              }
               className="h-4 w-4"
             />
 
@@ -151,7 +197,7 @@ function DeviceBuildModal({
             </span>
           </label>
 
-          {/* Buttons */}
+          {/* BUTTONS */}
           <div className="flex justify-end gap-3 pt-4">
 
             <button
@@ -166,7 +212,9 @@ function DeviceBuildModal({
               type="submit"
               className="rounded-lg bg-blue-600 px-5 py-2.5 font-semibold text-white hover:bg-blue-700"
             >
-              {build ? "Save Changes" : "Add Build"}
+              {build
+                ? "Save Changes"
+                : "Add Build"}
             </button>
 
           </div>

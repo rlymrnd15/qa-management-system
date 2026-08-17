@@ -1,17 +1,37 @@
 function TestCaseStats({ testCases }) {
   const total = testCases.length;
 
-  const passed = testCases.filter(
-    (testCase) => testCase.status === "Passed"
-  ).length;
+  // Supports both old values ("Pass"/"Fail")
+  // and new values ("Passed"/"Failed")
+  const passed = testCases.filter((testCase) => {
+    const status = String(testCase.status || "")
+      .trim()
+      .toLowerCase();
 
-  const failed = testCases.filter(
-    (testCase) => testCase.status === "Failed"
-  ).length;
+    return (
+      status === "passed" ||
+      status === "pass"
+    );
+  }).length;
 
-  const notRun = testCases.filter(
-    (testCase) => testCase.status === "Not Run"
-  ).length;
+  const failed = testCases.filter((testCase) => {
+    const status = String(testCase.status || "")
+      .trim()
+      .toLowerCase();
+
+    return (
+      status === "failed" ||
+      status === "fail"
+    );
+  }).length;
+
+  const notRun = testCases.filter((testCase) => {
+    const status = String(testCase.status || "")
+      .trim()
+      .toLowerCase();
+
+    return status === "not run";
+  }).length;
 
   const cards = [
     {

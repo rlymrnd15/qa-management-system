@@ -5,7 +5,10 @@ import PriorityChart from "../dashboard/PriorityChart";
 import RecentBugs from "../dashboard/RecentBugs";
 
 import { getBugReports } from "../../services/bugReportService";
-import { getBuilds } from "../../services/buildService";
+
+import {
+  getDeviceBuilds,
+} from "../../services/deviceBuildService";
 
 import { formatGameName } from "../../utils/formatGameName";
 
@@ -18,19 +21,44 @@ function Dashboard({
   const [loading, setLoading] = useState(true);
 
   // ==========================================
+  // NORMALIZE GAME
+  // ==========================================
+  // UI uses "snake-io"
+  // Firestore uses "snake"
+  const buildGame =
+    game === "snake-io"
+      ? "snake"
+      : game;
+
+  // ==========================================
   // LOAD DASHBOARD DATA
   // ==========================================
-
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        const [bugData, buildData] = await Promise.all([
+        setLoading(true);
+
+        const [
+          bugData,
+          buildData,
+        ] = await Promise.all([
           getBugReports(),
-          getBuilds(),
+          getDeviceBuilds(),
         ]);
+
+        console.log(
+          "DASHBOARD BUG DATA:",
+          bugData
+        );
+
+        console.log(
+          "DASHBOARD BUILD DATA:",
+          buildData
+        );
 
         setBugs(bugData);
         setBuilds(buildData);
+
       } catch (error) {
         console.error(
           "Error loading dashboard data:",
@@ -42,28 +70,59 @@ function Dashboard({
     };
 
     loadDashboardData();
-  }, []);
+
+  }, [game, platform]);
 
   // ==========================================
-  // FILTER BY CURRENT GAME + PLATFORM
+  // FILTER BUGS
   // ==========================================
-
   const gameBugs = bugs.filter(
     (bug) =>
       bug.game === game &&
       bug.platform === platform
   );
 
-  const gameBuilds = builds.filter(
-    (build) =>
-      build.game === game &&
-      build.platform === platform
+  // ==========================================
+  // FILTER BUILDS
+  // ==========================================
+  const gameBuilds =
+    builds.filter(
+      (build) =>
+        build.game === buildGame &&
+        build.platform === platform
+    );
+
+  // ==========================================
+  // DEBUG
+  // ==========================================
+  console.log(
+    "DASHBOARD GAME:",
+    game
+  );
+
+  console.log(
+    "DASHBOARD NORMALIZED GAME:",
+    buildGame
+  );
+
+  console.log(
+    "DASHBOARD PLATFORM:",
+    platform
+  );
+
+  console.log(
+    "DASHBOARD BUGS:",
+    gameBugs
+  );
+
+  console.log(
+    "DASHBOARD BUILDS:",
+    gameBuilds
   );
 
   // ==========================================
   // PLATFORM NAME
   // ==========================================
-
   const platformName = {
     ios: "iOS",
     android: "Android",
@@ -73,7 +132,6 @@ function Dashboard({
   // ==========================================
   // LOADING
   // ==========================================
-
   if (loading) {
     return (
       <div className="flex min-h-[300px] items-center justify-center">
@@ -85,46 +143,38 @@ function Dashboard({
   }
 
   // ==========================================
-  // DEBUG
-  // ==========================================
-
-  console.log("DASHBOARD GAME:", game);
-  console.log("DASHBOARD PLATFORM:", platform);
-  console.log("DASHBOARD BUGS:", gameBugs);
-  console.log("DASHBOARD BUILDS:", gameBuilds);
-
-  // ==========================================
   // DASHBOARD
   // ==========================================
-
   return (
     <div>
 
-      {/* Header */}
+      {/* ========================================
+          HEADER
+      ======================================== */}
       <div className="mb-8">
+
         <h1 className="text-4xl font-bold">
           QA Dashboard
         </h1>
 
         <p className="mt-2 text-slate-500">
           {formatGameName(game)} •{" "}
-          {platform === "ios"
-            ? "iOS"
-            : platform === "android"
-            ? "Android"
-            : platform === "amazon"
-            ? "Amazon"
-            : platform}
+          {platformName}
         </p>
+
       </div>
 
-      {/* Stats */}
+      {/* ========================================
+          STATS
+      ======================================== */}
       <DashboardStats
         builds={gameBuilds}
         bugs={gameBugs}
       />
 
-      {/* Charts / Recent Bugs */}
+      {/* ========================================
+          CHARTS / RECENT BUGS
+      ======================================== */}
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
 
         <PriorityChart

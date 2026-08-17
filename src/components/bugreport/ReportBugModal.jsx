@@ -165,10 +165,17 @@ function ReportBugModal({
         platform || bug?.platform,
 
       build:
-        build?.version || bug?.build,
+        build?.version ||
+        formData.version ||
+        bug?.build ||
+        bug?.version ||
+        "",
 
       version:
-        formData.version,
+        formData.version ||
+        build?.version ||
+        bug?.version ||
+        "",
 
       // ======================================
       // QA INFORMATION

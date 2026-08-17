@@ -11,7 +11,6 @@ function SearchFilters({
 }) {
   return (
     <div className="mb-8 rounded-2xl bg-white p-6 shadow-sm">
-
       <div className="flex flex-wrap gap-4">
 
         {/* Search */}
@@ -43,8 +42,10 @@ function SearchFilters({
         >
           <option value="All">All Status</option>
           <option value="Open">Open</option>
-          <option value="Pending">Pending</option>
-          <option value="Fixed">Fixed</option>
+          <option value="Resolved">Resolved</option>
+          <option value="Investigation">Investigation</option>
+          <option value="Ongoing Fix">Ongoing Fix</option>
+          <option value="Not a Bug">Not a Bug</option>
         </select>
 
         {/* Device */}
@@ -55,13 +56,12 @@ function SearchFilters({
         >
           {devices.map((item) => (
             <option key={item} value={item}>
-              {item}
+              {item === "All" ? "All Devices" : item}
             </option>
           ))}
         </select>
 
       </div>
-
     </div>
   );
 }

@@ -1,8 +1,9 @@
 import {
   Bug,
   CircleAlert,
+  Search,
+  Wrench,
   CircleCheckBig,
-  Clock3,
 } from "lucide-react";
 
 function BugStats({ bugs }) {
@@ -12,12 +13,16 @@ function BugStats({ bugs }) {
     (bug) => bug.status === "Open"
   ).length;
 
-  const fixed = bugs.filter(
-    (bug) => bug.status === "Fixed"
+  const investigation = bugs.filter(
+    (bug) => bug.status === "Investigation"
   ).length;
 
-  const pending = bugs.filter(
-    (bug) => bug.status === "Pending"
+  const ongoingFix = bugs.filter(
+    (bug) => bug.status === "Ongoing Fix"
+  ).length;
+
+  const resolved = bugs.filter(
+    (bug) => bug.status === "Resolved"
   ).length;
 
   const cards = [
@@ -38,40 +43,44 @@ function BugStats({ bugs }) {
     },
 
     {
-      title: "Fixed",
-      value: fixed,
+      title: "Investigation",
+      value: investigation,
+      icon: Search,
+      color: "text-purple-600",
+      bg: "bg-purple-100",
+    },
+
+    {
+      title: "Ongoing Fix",
+      value: ongoingFix,
+      icon: Wrench,
+      color: "text-yellow-600",
+      bg: "bg-yellow-100",
+    },
+
+    {
+      title: "Resolved",
+      value: resolved,
       icon: CircleCheckBig,
       color: "text-green-600",
       bg: "bg-green-100",
     },
-
-    {
-      title: "Pending",
-      value: pending,
-      icon: Clock3,
-      color: "text-yellow-600",
-      bg: "bg-yellow-100",
-    },
   ];
 
   return (
-    <div className="mb-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+    <div className="mb-8 grid gap-5 md:grid-cols-2 xl:grid-cols-5">
 
       {cards.map((card) => {
-
         const Icon = card.icon;
 
         return (
-
           <div
             key={card.title}
             className="rounded-2xl bg-white p-6 shadow-sm"
           >
-
             <div className="flex items-center justify-between">
 
               <div>
-
                 <p className="text-sm text-slate-500">
                   {card.title}
                 </p>
@@ -79,7 +88,6 @@ function BugStats({ bugs }) {
                 <h2 className="mt-2 text-3xl font-bold">
                   {card.value}
                 </h2>
-
               </div>
 
               <div
@@ -92,11 +100,8 @@ function BugStats({ bugs }) {
               </div>
 
             </div>
-
           </div>
-
         );
-
       })}
 
     </div>

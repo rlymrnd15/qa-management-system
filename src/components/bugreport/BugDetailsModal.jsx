@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 
 function BugDetailsModal({
   bug,
-  builds,
+  builds = [],
   onClose,
   onEdit,
   onDelete,
@@ -11,22 +11,32 @@ function BugDetailsModal({
 }) {
   if (!bug) return null;
 
-  const matchingBuild = builds.find(
-  (build) =>
-    build.game === bug.game &&
-    build.platform === bug.platform &&
-    build.version === bug.version
-);
+  // ==========================================
+  // FIND BUILD RELATED TO THIS BUG
+  // ==========================================
 
-const buildDescription =
-  matchingBuild?.description || "No build description provided.";
+  const matchingBuild = builds.find(
+    (build) =>
+      build.game === bug.game &&
+      build.platform === bug.platform &&
+      build.version === bug.version
+  );
+
+  const buildDescription =
+    matchingBuild?.description ||
+    "No build description provided.";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+
       <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-8">
 
-        {/* HEADER */}
+        {/* ========================================
+            HEADER
+        ======================================== */}
+
         <div className="mb-8 flex items-center justify-between">
+
           <div>
             <h2 className="text-3xl font-bold">
               {bug.title}
@@ -43,9 +53,13 @@ const buildDescription =
           >
             <X />
           </button>
+
         </div>
 
-        {/* BUG INFORMATION */}
+        {/* ========================================
+            BUG INFORMATION
+        ======================================== */}
+
         <div className="grid gap-5 md:grid-cols-2">
 
           <Info
@@ -75,7 +89,10 @@ const buildDescription =
 
           <Info
             label="Reproducible on Live Build"
-            value={bug.reproducibleLive || "Not Tested"}
+            value={
+              bug.reproducibleLive ||
+              "Not Tested"
+            }
           />
 
           <Info
@@ -90,18 +107,26 @@ const buildDescription =
 
           <Info
             label="Assigned Developer"
-            value={bug.developerName || "Unassigned"}
+            value={
+              bug.developerName ||
+              "Unassigned"
+            }
           />
 
         </div>
 
-        {/* TICKET URL */}
+        {/* ========================================
+            TICKET URL
+        ======================================== */}
+
         <div className="mt-6">
+
           <h3 className="mb-2 text-lg font-semibold">
             Ticket URL
           </h3>
 
           <div className="rounded-xl bg-slate-100 p-4">
+
             {bug.ticketUrl ? (
               <a
                 href={bug.ticketUrl}
@@ -116,10 +141,15 @@ const buildDescription =
                 No ticket assigned.
               </p>
             )}
+
           </div>
+
         </div>
 
-        {/* BUILD INFORMATION */}
+        {/* ========================================
+            BUILD INFORMATION
+        ======================================== */}
+
         <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50 p-6">
 
           <h3 className="mb-5 text-xl font-bold">
@@ -130,12 +160,12 @@ const buildDescription =
 
             <Info
               label="Build Version"
-              value={build?.version}
+              value={matchingBuild?.version}
             />
 
             <Info
               label="Release Date"
-              value={build?.releaseDate}
+              value={matchingBuild?.releaseDate}
             />
 
           </div>
@@ -147,25 +177,39 @@ const buildDescription =
             </p>
 
             <div className="mt-2 whitespace-pre-wrap rounded-xl bg-white p-4">
-              {build?.description || "No build description provided."}
+
+              {matchingBuild?.description ||
+                "No build description provided."}
+
             </div>
 
           </div>
 
         </div>
 
-        {/* QA COMMENTS */}
+        {/* ========================================
+            QA COMMENTS
+        ======================================== */}
+
         <div className="mt-6">
+
           <h3 className="mb-2 text-lg font-semibold">
             QA Comments
           </h3>
 
           <div className="whitespace-pre-wrap rounded-xl bg-slate-100 p-4">
-            {bug.qaComments || "No QA comments."}
+
+            {bug.qaComments ||
+              "No QA comments."}
+
           </div>
+
         </div>
 
-        {/* DEVELOPER INFORMATION */}
+        {/* ========================================
+            DEVELOPER INFORMATION
+        ======================================== */}
+
         <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50 p-6">
 
           <h3 className="mb-5 text-xl font-bold">
@@ -176,17 +220,26 @@ const buildDescription =
 
             <Info
               label="Priority"
-              value={bug.priority || "Unassigned"}
+              value={
+                bug.priority ||
+                "Unassigned"
+              }
             />
 
             <Info
               label="Status"
-              value={bug.status || "Open"}
+              value={
+                bug.status ||
+                "Open"
+              }
             />
 
             <Info
               label="Assigned Developer"
-              value={bug.developerName || "Unassigned"}
+              value={
+                bug.developerName ||
+                "Unassigned"
+              }
             />
 
             <Info
@@ -200,6 +253,7 @@ const buildDescription =
           </div>
 
           {/* DEVELOPER COMMENTS */}
+
           <div className="mt-5">
 
             <p className="text-sm font-semibold">
@@ -207,15 +261,20 @@ const buildDescription =
             </p>
 
             <div className="mt-2 whitespace-pre-wrap rounded-xl bg-white p-4">
+
               {bug.developerComments ||
                 "No developer comments."}
+
             </div>
 
           </div>
 
         </div>
 
-        {/* STEPS TO REPRODUCE */}
+        {/* ========================================
+            STEPS TO REPRODUCE
+        ======================================== */}
+
         <div className="mt-8">
 
           <h3 className="mb-2 text-lg font-semibold">
@@ -223,12 +282,18 @@ const buildDescription =
           </h3>
 
           <div className="whitespace-pre-wrap rounded-xl bg-slate-100 p-4">
-            {bug.steps || "No steps provided."}
+
+            {bug.steps ||
+              "No steps provided."}
+
           </div>
 
         </div>
 
-        {/* EVIDENCE */}
+        {/* ========================================
+            EVIDENCE
+        ======================================== */}
+
         <div className="mt-6">
 
           <h3 className="mb-2 text-lg font-semibold">
@@ -256,10 +321,14 @@ const buildDescription =
 
         </div>
 
-        {/* BUTTONS */}
+        {/* ========================================
+            BUTTONS
+        ======================================== */}
+
         <div className="mt-8 flex justify-end gap-3">
 
           {/* EDIT */}
+
           <button
             onClick={() => onEdit(bug)}
             className="rounded-xl border px-6 py-3 font-semibold hover:bg-slate-100"
@@ -268,6 +337,7 @@ const buildDescription =
           </button>
 
           {/* DELETE - DEV ONLY */}
+
           {isDev && (
             <button
               onClick={() => onDelete(bug)}
@@ -278,6 +348,7 @@ const buildDescription =
           )}
 
           {/* CLOSE */}
+
           <button
             onClick={onClose}
             className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
@@ -288,6 +359,7 @@ const buildDescription =
         </div>
 
       </div>
+
     </div>
   );
 }
@@ -295,6 +367,7 @@ const buildDescription =
 function Info({ label, value }) {
   return (
     <div className="rounded-xl border p-4">
+
       <p className="text-sm text-slate-500">
         {label}
       </p>
@@ -302,6 +375,7 @@ function Info({ label, value }) {
       <p className="mt-1 font-semibold">
         {value || "-"}
       </p>
+
     </div>
   );
 }

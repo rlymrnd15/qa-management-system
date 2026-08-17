@@ -5,13 +5,16 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  serverTimestamp,
 } from "firebase/firestore";
 
 import { db } from "../firebase";
 
 const testCasesCollection = collection(db, "testCases");
 
-// Get all test cases
+// ==========================================
+// GET ALL TEST CASES
+// ==========================================
 export const getTestCases = async () => {
   const snapshot = await getDocs(testCasesCollection);
 
@@ -21,11 +24,20 @@ export const getTestCases = async () => {
   }));
 };
 
-// Add test case
+// ==========================================
+// ADD TEST CASE
+// ==========================================
 export const addTestCase = async (testCase) => {
   const { id, ...data } = testCase;
 
-  const docRef = await addDoc(testCasesCollection, data);
+  const docRef = await addDoc(testCasesCollection, {
+    ...data,
+
+    // IMPORTANT:
+    // Save the actual Firebase server time
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
 
   return {
     ...data,
@@ -33,8 +45,14 @@ export const addTestCase = async (testCase) => {
   };
 };
 
-// Update test case
+// ==========================================
+// UPDATE TEST CASE
+// ==========================================
 export const updateTestCase = async (id, testCase) => {
+  if (!id) {
+    throw new Error("Test Case ID is missing.");
+  }
+
   const testCaseRef = doc(
     db,
     "testCases",
@@ -43,7 +61,13 @@ export const updateTestCase = async (id, testCase) => {
 
   const { id: ignoredId, ...data } = testCase;
 
-  await updateDoc(testCaseRef, data);
+  await updateDoc(testCaseRef, {
+    ...data,
+
+    // IMPORTANT:
+    // Every edit updates the timestamp
+    updatedAt: serverTimestamp(),
+  });
 
   return {
     ...data,
@@ -51,8 +75,14 @@ export const updateTestCase = async (id, testCase) => {
   };
 };
 
-// Delete test case
+// ==========================================
+// DELETE TEST CASE
+// ==========================================
 export const deleteTestCase = async (id) => {
+  if (!id) {
+    throw new Error("Test Case ID is missing.");
+  }
+
   const testCaseRef = doc(
     db,
     "testCases",

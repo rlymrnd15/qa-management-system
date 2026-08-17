@@ -5,6 +5,7 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  serverTimestamp,
 } from "firebase/firestore";
 
 import { db } from "../firebase";
@@ -42,7 +43,11 @@ export const addBugReport = async (bug) => {
 
   const docRef = await addDoc(
     bugsCollection,
-    cleanData
+    {
+      ...cleanData,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }
   );
 
   return {
@@ -76,10 +81,10 @@ export const updateBugReport = async (
     )
   );
 
-  await updateDoc(
-    bugRef,
-    cleanData
-  );
+  await updateDoc(bugRef, {
+    ...cleanData,
+    updatedAt: serverTimestamp(),
+  });
 
   return {
     ...cleanData,

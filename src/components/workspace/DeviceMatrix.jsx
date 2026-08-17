@@ -7,6 +7,7 @@ import DeviceBuildDetails from "../devicematrix/DeviceBuildDetails";
 import DeviceBuildModal from "../devicematrix/DeviceBuildModal";
 
 import { getDeviceTests } from "../../services/deviceTestService";
+
 import {
   getDeviceBuilds,
   addDeviceBuild,
@@ -18,170 +19,428 @@ function DeviceMatrix({
   game,
   platform,
 }) {
-
   const { role } = useAuth();
-  const isDev = role?.toLowerCase() === "dev";
 
-  const [selectedBuild, setSelectedBuild] = useState(null);
+  const isDev =
+    role?.toLowerCase() === "dev";
 
-  // Device tests loaded from Firestore
-  const [deviceTests, setDeviceTests] = useState([]);
+  const [selectedBuild, setSelectedBuild] =
+    useState(null);
 
-  // Device builds loaded from Firestore
-  const [deviceBuilds, setDeviceBuilds] = useState([]);
+  const [deviceTests, setDeviceTests] =
+    useState([]);
 
-  // Loading states
-  const [loading, setLoading] = useState(true);
-  const [buildLoading, setBuildLoading] = useState(true);
+  const [deviceBuilds, setDeviceBuilds] =
+    useState([]);
 
-  // Build modal
-  const [buildModalOpen, setBuildModalOpen] = useState(false);
-  const [editingBuild, setEditingBuild] = useState(null);
+  const [loading, setLoading] =
+    useState(true);
 
-  // Load device tests
+  const [buildLoading, setBuildLoading] =
+    useState(true);
+
+  const [buildModalOpen, setBuildModalOpen] =
+    useState(false);
+
+  const [editingBuild, setEditingBuild] =
+    useState(null);
+
+  // ==========================================
+  // LOAD DEVICE TESTS
+  // ==========================================
   useEffect(() => {
-    const loadDeviceTests = async () => {
-      try {
-        const data = await getDeviceTests();
-        setDeviceTests(data);
-      } catch (error) {
-        console.error(
-          "Error loading device tests:",
-          error
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+    const loadDeviceTests =
+      async () => {
+        try {
+          const data =
+            await getDeviceTests();
+
+          setDeviceTests(data);
+        } catch (error) {
+          console.error(
+            "Error loading device tests:",
+            error
+          );
+        } finally {
+          setLoading(false);
+        }
+      };
 
     loadDeviceTests();
   }, []);
 
-  // Load device builds
+  // ==========================================
+  // LOAD BUILDS
+  // ==========================================
   useEffect(() => {
-    const loadBuilds = async () => {
-      try {
-        const data = await getDeviceBuilds();
+    const loadBuilds =
+      async () => {
+        try {
+          const data =
+            await getDeviceBuilds();
 
-        setDeviceBuilds(data);
-      } catch (error) {
-        console.error(
-          "Error loading device builds:",
-          error
-        );
-      } finally {
-        setBuildLoading(false);
-      }
-    };
+          setDeviceBuilds(data);
+        } catch (error) {
+          console.error(
+            "Error loading device builds:",
+            error
+          );
+        } finally {
+          setBuildLoading(false);
+        }
+      };
 
     loadBuilds();
   }, []);
 
-  console.log("Selected game:", game);
-  console.log("Selected platform:", platform);
-  console.log("Firestore builds:", deviceBuilds);
+  // ==========================================
+  // DEBUG
+  // ==========================================
+  console.log(
+    "================================="
+  );
 
-  // Convert project slug to Firestore game value
+  console.log(
+    "DEVICE MATRIX GAME:",
+    game
+  );
+
+  console.log(
+    "DEVICE MATRIX PLATFORM:",
+    platform
+  );
+
+  console.log(
+    "DEVICE BUILDS:",
+    deviceBuilds
+  );
+
+  console.log(
+    "================================="
+  );
+
+  // ==========================================
+  // GAME MAPPING
+  // ==========================================
   const buildGame =
     game === "snake-io"
       ? "snake"
       : game;
 
-  // Only show builds for selected game + platform
-  const filteredBuilds = deviceBuilds.filter(
-    (build) =>
-      build.game === buildGame &&
-      build.platform === platform
-  );
+  // ==========================================
+  // FILTER BUILDS
+  // ==========================================
+  const filteredBuilds =
+    deviceBuilds.filter(
+      (build) =>
+        build.game === buildGame &&
+        build.platform === platform
+    );
 
-  // Calculate statistics
-  const buildsWithStats = filteredBuilds.map(
-    (build) => {
-      const buildDevices = deviceTests.filter(
-        (device) =>
-          device.game === buildGame &&
-          device.platform === platform &&
-          device.build === build.version
-      );
-
-      const totalDevices =
-        buildDevices.length;
-
-      const testFields = [
-        "generalTest",
-        "deviceHeating",
-        "upgradeTesting",
-        "adsTesting",
-        "uiTesting",
-        "destructiveTesting",
-        "badInternet",
-        "performanceTesting",
-        "iapTesting",
-        "viralSocial",
-      ];
-
-      const passed =
-        buildDevices.filter((device) => {
-          const hasFail =
-            testFields.some(
-              (field) =>
-                device[field] === "FAIL"
-            );
-
-          return (
-            device.progress === 100 &&
-            !hasFail
+  // ==========================================
+  // BUILD STATISTICS
+  // ==========================================
+  const buildsWithStats =
+    filteredBuilds.map(
+      (build) => {
+        const buildDevices =
+          deviceTests.filter(
+            (device) =>
+              device.game ===
+                buildGame &&
+              device.platform ===
+                platform &&
+              String(device.build) ===
+                String(build.version)
           );
-        }).length;
 
-      const failed =
-        buildDevices.filter((device) =>
-          testFields.some(
-            (field) =>
-              device[field] === "FAIL"
-          )
-        ).length;
+        const totalDevices =
+          buildDevices.length;
 
-      return {
-        ...build,
-        totalDevices,
-        passed,
-        failed,
-      };
-    }
-  );
+        const testFields = [
+          "generalTest",
+          "deviceHeating",
+          "upgradeTesting",
+          "adsTesting",
+          "uiTesting",
+          "destructiveTesting",
+          "badInternet",
+          "performanceTesting",
+          "iapTesting",
+          "viralSocial",
+        ];
 
-  const handleEditBuild = (build) => {
+        const passed =
+          buildDevices.filter(
+            (device) => {
+              const hasFail =
+                testFields.some(
+                  (field) =>
+                    device[field] ===
+                    "FAIL"
+                );
+
+              return (
+                device.progress ===
+                  100 &&
+                !hasFail
+              );
+            }
+          ).length;
+
+        const failed =
+          buildDevices.filter(
+            (device) =>
+              testFields.some(
+                (field) =>
+                  device[field] ===
+                  "FAIL"
+              )
+          ).length;
+
+        return {
+          ...build,
+          totalDevices,
+          passed,
+          failed,
+        };
+      }
+    );
+
+  // ==========================================
+  // EDIT BUILD
+  // ==========================================
+  const handleEditBuild = (
+    build
+  ) => {
+    console.log(
+      "EDITING BUILD:",
+      build
+    );
+
     setEditingBuild(build);
     setBuildModalOpen(true);
   };
 
-  const handleDeleteBuild = async (build) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete Build v${build.version}?`
-    );
+  // ==========================================
+  // DELETE BUILD
+  // ==========================================
+  const handleDeleteBuild =
+    async (build) => {
+      const confirmed =
+        window.confirm(
+          `Are you sure you want to delete Build v${build.version}?`
+        );
 
-    if (!confirmed) return;
+      if (!confirmed) {
+        return;
+      }
 
-    try {
-      await deleteDeviceBuild(build.id);
+      try {
+        await deleteDeviceBuild(
+          build.id
+        );
 
-      setDeviceBuilds((prev) =>
-        prev.filter((item) => item.id !== build.id)
-      );
-    } catch (error) {
-      console.error(
-        "Error deleting device build:",
-        error
-      );
+        setDeviceBuilds(
+          (prev) =>
+            prev.filter(
+              (item) =>
+                item.id !== build.id
+            )
+        );
 
-      alert("Failed to delete device build.");
-    }
-  };
+        // If the deleted build was
+        // currently selected, go back.
+        if (
+          selectedBuild?.id ===
+          build.id
+        ) {
+          setSelectedBuild(null);
+        }
 
+      } catch (error) {
+        console.error(
+          "Error deleting device build:",
+          error
+        );
 
-  // Loading screen
-  if (loading || buildLoading) {
+        alert(
+          error.message ||
+            "Failed to delete device build."
+        );
+      }
+    };
+
+  // ==========================================
+  // SAVE BUILD
+  // ==========================================
+  const handleSaveBuild =
+    async (newBuild) => {
+      try {
+        // ====================================
+        // EDIT
+        // ====================================
+        if (editingBuild) {
+          console.log(
+            "EDITING EXISTING BUILD:",
+            editingBuild
+          );
+
+          console.log(
+            "NEW VALUES:",
+            newBuild
+          );
+
+          const updatedBuild =
+            await updateDeviceBuild(
+              editingBuild.id,
+              {
+                ...newBuild,
+                game: buildGame,
+                platform,
+              }
+            );
+
+          console.log(
+            "UPDATED BUILD RETURNED:",
+            updatedBuild
+          );
+
+          setDeviceBuilds(
+            (prev) => {
+              return prev.map(
+                (build) => {
+                  // If the updated build
+                  // is now latest, remove
+                  // latest from other builds.
+                  if (
+                    updatedBuild.latest &&
+                    build.game ===
+                      buildGame &&
+                    build.platform ===
+                      platform &&
+                    build.id !==
+                      updatedBuild.id
+                  ) {
+                    return {
+                      ...build,
+                      latest: false,
+                    };
+                  }
+
+                  if (
+                    build.id ===
+                    updatedBuild.id
+                  ) {
+                    return {
+                      ...build,
+                      ...updatedBuild,
+                    };
+                  }
+
+                  return build;
+                }
+              );
+            }
+          );
+
+          // Update selected build too
+          // if currently viewing it.
+          setSelectedBuild(
+            (current) => {
+              if (
+                current?.id ===
+                updatedBuild.id
+              ) {
+                return {
+                  ...current,
+                  ...updatedBuild,
+                };
+              }
+
+              return current;
+            }
+          );
+        }
+
+        // ====================================
+        // ADD
+        // ====================================
+        else {
+          console.log(
+            "ADDING NEW BUILD:",
+            newBuild
+          );
+
+          const savedBuild =
+            await addDeviceBuild({
+              ...newBuild,
+              game: buildGame,
+              platform,
+            });
+
+          setDeviceBuilds(
+            (prev) => {
+              let updatedBuilds =
+                prev;
+
+              if (
+                savedBuild.latest
+              ) {
+                updatedBuilds =
+                  prev.map(
+                    (build) => {
+                      if (
+                        build.game ===
+                          buildGame &&
+                        build.platform ===
+                          platform
+                      ) {
+                        return {
+                          ...build,
+                          latest: false,
+                        };
+                      }
+
+                      return build;
+                    }
+                  );
+              }
+
+              return [
+                savedBuild,
+                ...updatedBuilds,
+              ];
+            }
+          );
+        }
+
+        // ====================================
+        // CLOSE MODAL
+        // ====================================
+        setBuildModalOpen(false);
+        setEditingBuild(null);
+
+      } catch (error) {
+        console.error(
+          "Error saving device build:",
+          error
+        );
+
+        alert(
+          error.message ||
+            "Failed to save device build."
+        );
+      }
+    };
+
+  // ==========================================
+  // LOADING
+  // ==========================================
+  if (
+    loading ||
+    buildLoading
+  ) {
     return (
       <div className="flex min-h-[300px] items-center justify-center">
         <p className="text-slate-500">
@@ -191,7 +450,9 @@ function DeviceMatrix({
     );
   }
 
-  // If a build is selected
+  // ==========================================
+  // BUILD DETAILS
+  // ==========================================
   if (selectedBuild) {
     return (
       <DeviceBuildDetails
@@ -199,7 +460,9 @@ function DeviceMatrix({
         game={game}
         platform={platform}
         deviceTests={deviceTests}
-        setDeviceTests={setDeviceTests}
+        setDeviceTests={
+          setDeviceTests
+        }
         onBack={() =>
           setSelectedBuild(null)
         }
@@ -207,10 +470,15 @@ function DeviceMatrix({
     );
   }
 
+  // ==========================================
+  // RENDER
+  // ==========================================
   return (
     <div>
 
-      {/* Header */}
+      {/* ========================================
+          HEADER
+      ======================================== */}
       <div className="mb-8 flex items-end justify-between">
 
         <div>
@@ -225,7 +493,10 @@ function DeviceMatrix({
 
         {isDev && (
           <button
-            onClick={() => setBuildModalOpen(true)}
+            onClick={() => {
+              setEditingBuild(null);
+              setBuildModalOpen(true);
+            }}
             className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
           >
             + Add Build
@@ -234,30 +505,56 @@ function DeviceMatrix({
 
       </div>
 
-      {/* Build Cards */}
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      {/* ========================================
+          BUILD CARDS
+      ======================================== */}
+      {buildsWithStats.length === 0 ? (
 
-        {buildsWithStats.map(
-          (build) => (
-            <DeviceBuildCard
-              key={build.id}
-              build={build}
-              onOpen={() =>
-                setSelectedBuild(build)
-              }
-              onEdit={() =>
-                handleEditBuild(build)
-              }
-              onDelete={() =>
-                handleDeleteBuild(build)
-              }
-            />
-          )
-        )}
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
+          <p className="font-semibold text-slate-700">
+            No builds found.
+          </p>
 
-      </div>
+          <p className="mt-1 text-sm text-slate-500">
+            Add a build to start device testing.
+          </p>
+        </div>
 
-      {/* Add / Edit Build Modal */}
+      ) : (
+
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+
+          {buildsWithStats.map(
+            (build) => (
+              <DeviceBuildCard
+                key={build.id}
+                build={build}
+                onOpen={() =>
+                  setSelectedBuild(
+                    build
+                  )
+                }
+                onEdit={() =>
+                  handleEditBuild(
+                    build
+                  )
+                }
+                onDelete={() =>
+                  handleDeleteBuild(
+                    build
+                  )
+                }
+              />
+            )
+          )}
+
+        </div>
+
+      )}
+
+      {/* ========================================
+          ADD / EDIT BUILD MODAL
+      ======================================== */}
       <DeviceBuildModal
         isOpen={buildModalOpen}
         build={editingBuild}
@@ -267,85 +564,9 @@ function DeviceMatrix({
           setBuildModalOpen(false);
           setEditingBuild(null);
         }}
-        onSubmit={async (newBuild) => {
-          try {
-            if (editingBuild) {
-              // EDIT BUILD
-              const updatedBuild = await updateDeviceBuild(
-                editingBuild.id,
-                {
-                  ...newBuild,
-                  game: buildGame,
-                  platform: platform,
-                }
-              );
-
-              setDeviceBuilds((prev) =>
-                prev.map((build) => {
-                  // If the edited build is now Latest,
-                  // remove Latest from other builds
-                  // of the same game + platform.
-                  if (
-                    updatedBuild.latest &&
-                    build.game === buildGame &&
-                    build.platform === platform &&
-                    build.id !== updatedBuild.id
-                  ) {
-                    return {
-                      ...build,
-                      latest: false,
-                    };
-                  }
-
-                  return build.id === updatedBuild.id
-                    ? updatedBuild
-                    : build;
-                })
-              );
-
-            } else {
-              // ADD BUILD
-              const savedBuild = await addDeviceBuild({
-                ...newBuild,
-                game: buildGame,
-                platform: platform,
-              });
-
-              setDeviceBuilds((prev) => {
-                const updatedBuilds = prev.map((build) => {
-                  // If the new build is Latest,
-                  // remove Latest from other builds
-                  // of the same game + platform.
-                  if (
-                    savedBuild.latest &&
-                    build.game === buildGame &&
-                    build.platform === platform
-                  ) {
-                    return {
-                      ...build,
-                      latest: false,
-                    };
-                  }
-
-                  return build;
-                });
-
-                return [savedBuild, ...updatedBuilds];
-              });
-            }
-
-            setBuildModalOpen(false);
-            setEditingBuild(null);
-
-          } catch (error) {
-            console.error(
-              "Error saving device build:",
-              error
-            );
-
-            alert("Failed to save device build.");
-          }
-        }}
+        onSubmit={
+          handleSaveBuild
+        }
       />
 
     </div>

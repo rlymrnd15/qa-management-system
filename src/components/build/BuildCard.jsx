@@ -5,10 +5,36 @@ import {
   Bug,
   CircleCheck,
   CircleAlert,
-  Clock3,
-  Pencil,
-  Trash2,
+  Search,
+  Wrench,
 } from "lucide-react";
+
+function normalize(value) {
+  if (
+    value === undefined ||
+    value === null
+  ) {
+    return "";
+  }
+
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/^v/, "");
+}
+
+function normalizeGame(game) {
+  const value = normalize(game);
+
+  if (
+    value === "snake" ||
+    value === "snake-io"
+  ) {
+    return "snake";
+  }
+
+  return value;
+}
 
 function BuildCard({
   build,
@@ -18,33 +44,189 @@ function BuildCard({
   onDelete,
   isDev,
 }) {
-  const buildBugs = bugs.filter(
-    (bug) => String(bug.build) === String(build.version)
+  // ==========================================
+  // BUILD INFORMATION
+  // ==========================================
+
+  const buildVersion = normalize(
+    build.version
   );
 
-  const totalBugs = buildBugs.length;
+  const buildGame = normalizeGame(
+    build.game
+  );
 
-  const fixed = buildBugs.filter(
-    (bug) => bug.status === "Fixed" || bug.status === "Closed"
-  ).length;
+  const buildPlatform = normalize(
+    build.platform
+  );
 
-  const pending = buildBugs.filter(
-    (bug) => bug.status === "Pending"
-  ).length;
+  // ==========================================
+  // MATCH BUGS TO THIS BUILD
+  // ==========================================
 
-  const open = buildBugs.filter(
-    (bug) => bug.status === "Open"
-  ).length;
+  const buildBugs = bugs.filter((bug) => {
 
-  const fixedPercentage =
+    const bugGame = normalizeGame(
+      bug.game
+    );
+
+    const bugPlatform = normalize(
+      bug.platform
+    );
+
+    // Some bugs may store the build in
+    // bug.build while others may store it
+    // in bug.version.
+    const bugBuild = normalize(
+      bug.build || bug.version
+    );
+
+    const sameGame =
+      bugGame === buildGame;
+
+    const samePlatform =
+      bugPlatform === buildPlatform;
+
+    const sameBuild =
+      bugBuild === buildVersion;
+
+    console.log(
+      "================================"
+    );
+
+    console.log(
+      "BUILD CARD MATCH"
+    );
+
+    console.log(
+      "BUILD ID:",
+      build.id
+    );
+
+    console.log(
+      "BUILD VERSION:",
+      build.version
+    );
+
+    console.log(
+      "BUILD GAME:",
+      build.game
+    );
+
+    console.log(
+      "BUILD PLATFORM:",
+      build.platform
+    );
+
+    console.log(
+      "BUG ID:",
+      bug.id
+    );
+
+    console.log(
+      "BUG TITLE:",
+      bug.title
+    );
+
+    console.log(
+      "BUG BUILD:",
+      bug.build
+    );
+
+    console.log(
+      "BUG VERSION:",
+      bug.version
+    );
+
+    console.log(
+      "BUG GAME:",
+      bug.game
+    );
+
+    console.log(
+      "BUG PLATFORM:",
+      bug.platform
+    );
+
+    console.log(
+      "MATCH GAME:",
+      sameGame
+    );
+
+    console.log(
+      "MATCH PLATFORM:",
+      samePlatform
+    );
+
+    console.log(
+      "MATCH BUILD:",
+      sameBuild
+    );
+
+    console.log(
+      "================================"
+    );
+
+    return (
+      sameGame &&
+      samePlatform &&
+      sameBuild
+    );
+  });
+
+  // ==========================================
+  // TOTAL BUGS
+  // ==========================================
+
+  const totalBugs =
+    buildBugs.length;
+
+  // ==========================================
+  // BUG STATUS COUNTS
+  // ==========================================
+
+  const resolved =
+    buildBugs.filter(
+      (bug) =>
+        bug.status === "Resolved"
+    ).length;
+
+  const investigation =
+    buildBugs.filter(
+      (bug) =>
+        bug.status === "Investigation"
+    ).length;
+
+  const ongoingFix =
+    buildBugs.filter(
+      (bug) =>
+        bug.status === "Ongoing Fix"
+    ).length;
+
+  const open =
+    buildBugs.filter(
+      (bug) =>
+        bug.status === "Open"
+    ).length;
+
+  // ==========================================
+  // RESOLUTION PROGRESS
+  // ==========================================
+
+  const resolvedPercentage =
     totalBugs === 0
       ? 0
-      : Math.round((fixed / totalBugs) * 100);
+      : Math.round(
+          (resolved / totalBugs) * 100
+        );
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md">
 
-      {/* Header */}
+      {/* ========================================
+          HEADER
+      ======================================== */}
+
       <div className="flex items-start justify-between gap-4">
 
         <div className="flex min-w-0 items-center gap-3">
@@ -72,6 +254,7 @@ function BuildCard({
             </p>
 
           </div>
+
         </div>
 
         {build.latest && (
@@ -82,7 +265,10 @@ function BuildCard({
 
       </div>
 
-      {/* Description */}
+      {/* ========================================
+          DESCRIPTION
+      ======================================== */}
+
       {build.description && (
         <div className="mt-5 rounded-xl bg-slate-50 p-4">
 
@@ -99,7 +285,10 @@ function BuildCard({
 
       <div className="my-6 h-px bg-slate-200" />
 
-      {/* Total Bugs */}
+      {/* ========================================
+          TOTAL BUGS
+      ======================================== */}
+
       <div>
 
         <div className="flex items-center gap-2">
@@ -121,7 +310,10 @@ function BuildCard({
 
       </div>
 
-      {/* Progress */}
+      {/* ========================================
+          RESOLUTION PROGRESS
+      ======================================== */}
+
       <div className="mt-6">
 
         <div className="mb-2 flex justify-between">
@@ -131,7 +323,7 @@ function BuildCard({
           </p>
 
           <p className="text-sm font-semibold text-blue-600">
-            {fixedPercentage}% Fixed
+            {resolvedPercentage}% Resolved
           </p>
 
         </div>
@@ -141,7 +333,7 @@ function BuildCard({
           <div
             className="h-full rounded-full bg-blue-600 transition-all"
             style={{
-              width: `${fixedPercentage}%`,
+              width: `${resolvedPercentage}%`,
             }}
           />
 
@@ -149,42 +341,13 @@ function BuildCard({
 
       </div>
 
-      {/* Status */}
-      <div className="mt-6 grid grid-cols-3 gap-4">
+      {/* ========================================
+          STATUS
+      ======================================== */}
 
-        <div className="rounded-xl bg-green-50 p-4">
+      <div className="mt-6 grid grid-cols-2 gap-4">
 
-          <CircleCheck
-            className="mb-2 text-green-600"
-            size={20}
-          />
-
-          <p className="text-sm text-slate-500">
-            Fixed
-          </p>
-
-          <h4 className="text-2xl font-bold">
-            {fixed}
-          </h4>
-
-        </div>
-
-        <div className="rounded-xl bg-yellow-50 p-4">
-
-          <Clock3
-            className="mb-2 text-yellow-600"
-            size={20}
-          />
-
-          <p className="text-sm text-slate-500">
-            Pending
-          </p>
-
-          <h4 className="text-2xl font-bold">
-            {pending}
-          </h4>
-
-        </div>
+        {/* OPEN */}
 
         <div className="rounded-xl bg-red-50 p-4">
 
@@ -203,9 +366,69 @@ function BuildCard({
 
         </div>
 
+        {/* INVESTIGATION */}
+
+        <div className="rounded-xl bg-purple-50 p-4">
+
+          <Search
+            className="mb-2 text-purple-600"
+            size={20}
+          />
+
+          <p className="text-sm text-slate-500">
+            Investigation
+          </p>
+
+          <h4 className="text-2xl font-bold">
+            {investigation}
+          </h4>
+
+        </div>
+
+        {/* ONGOING FIX */}
+
+        <div className="rounded-xl bg-yellow-50 p-4">
+
+          <Wrench
+            className="mb-2 text-yellow-600"
+            size={20}
+          />
+
+          <p className="text-sm text-slate-500">
+            Ongoing Fix
+          </p>
+
+          <h4 className="text-2xl font-bold">
+            {ongoingFix}
+          </h4>
+
+        </div>
+
+        {/* RESOLVED */}
+
+        <div className="rounded-xl bg-green-50 p-4">
+
+          <CircleCheck
+            className="mb-2 text-green-600"
+            size={20}
+          />
+
+          <p className="text-sm text-slate-500">
+            Resolved
+          </p>
+
+          <h4 className="text-2xl font-bold">
+            {resolved}
+          </h4>
+
+        </div>
+
       </div>
 
-     {/* EDIT / DELETE */}
+      {/* ========================================
+          EDIT / DELETE
+      ======================================== */}
+
       {isDev && (
         <div className="mt-6 flex gap-3">
 
@@ -213,6 +436,7 @@ function BuildCard({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
+
               onEdit(build);
             }}
             className="flex-1 rounded-xl border border-slate-300 py-3 font-semibold text-slate-700 transition hover:bg-slate-100"
@@ -224,6 +448,7 @@ function BuildCard({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
+
               onDelete(build);
             }}
             className="flex-1 rounded-xl border border-red-200 py-3 font-semibold text-red-600 transition hover:bg-red-50"
@@ -234,15 +459,25 @@ function BuildCard({
         </div>
       )}
 
-      {/* View Bugs */}
+      {/* ========================================
+          VIEW BUGS
+      ======================================== */}
+
       <button
         type="button"
-        onClick={() => onClick(build)}
+        onClick={() =>
+          onClick(build)
+        }
         className="mt-4 w-full rounded-xl bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700"
       >
         <div className="flex items-center justify-center gap-2">
+
           View Bugs
-          <ArrowRight size={18} />
+
+          <ArrowRight
+            size={18}
+          />
+
         </div>
       </button>
 

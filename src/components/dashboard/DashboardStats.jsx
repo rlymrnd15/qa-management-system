@@ -6,43 +6,65 @@ import {
 } from "lucide-react";
 
 function DashboardStats({
-  bugs,
-  builds,
+  bugs = [],
+  builds = [],
 }) {
-
+  // ==========================================
+  // TOTAL BUGS
+  // ==========================================
   const total = bugs.length;
 
+  // ==========================================
+  // OPEN BUGS
+  // ==========================================
   const open = bugs.filter(
     (bug) => bug.status === "Open"
   ).length;
 
+  // ==========================================
+  // CLOSED / FIXED BUGS
+  // ==========================================
   const fixed = bugs.filter(
-    (bug) => bug.status === "Closed"
+    (bug) =>
+      bug.status === "Fixed" ||
+      bug.status === "Closed"
   ).length;
 
   return (
     <div className="grid gap-5 md:grid-cols-4">
 
+      {/* ========================================
+          TOTAL BUGS
+      ======================================== */}
       <Card
-        icon={<Bug />}
+        icon={<Bug size={24} />}
         title="Total Bugs"
         value={total}
       />
 
+      {/* ========================================
+          OPEN BUGS
+      ======================================== */}
       <Card
-        icon={<CircleAlert />}
+        icon={<CircleAlert size={24} />}
         title="Open Bugs"
         value={open}
       />
 
+      {/* ========================================
+          FIXED BUGS
+      ======================================== */}
       <Card
-        icon={<CircleCheck />}
-        title="Closed Bugs"
+        icon={<CircleCheck size={24} />}
+        title="Fixed Bugs"
         value={fixed}
       />
 
+      {/* ========================================
+          BUILDS
+      ======================================== */}
       <Card
-        icon={<Package />}
+        icon={<Package size={24} />}
         title="Builds"
         value={builds.length}
       />
